@@ -1,0 +1,11 @@
+.vscode/
+
+**/.env
+**/__pycache__/
+**/node_modules/
+**/dist/
+**/build/
+
+client/*.tsbuildinfo
+client/next-env.d.ts
+client/.next/
