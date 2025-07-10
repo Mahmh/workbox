@@ -1,4 +1,5 @@
 .vscode/
+blueprint.png
 
 **/.env
 **/__pycache__/
@@ -9,3 +10,4 @@
 client/*.tsbuildinfo
 client/next-env.d.ts
 client/.next/
+server/archived/
