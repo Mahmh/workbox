@@ -2,7 +2,7 @@ from typing import List, Dict
 from urllib.parse import urlsplit
 from ddgs import DDGS
 import os, time
-from datamodels import File
+from lib.datamodels import File
 
 def process(grade: int, curriculum: str, topics: List[str]) -> Dict[str, List[File]]:
     """Performs how the algorithm processes input and produces the output."""

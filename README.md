@@ -19,11 +19,22 @@ workbox/
 ```
 
 ## Quick Start
-1. You may need proper permissions to import the codebase:
-    `git pull git@github.com:Mahmh/workbox.git`
+### Requirements
+- Docker ([install](https://docs.docker.com/engine/install/))
+- Docker Compose plugin ([install](https://docs.docker.com/compose/install/))
+- Set up permissions to import the codebase (e.g., SSH key).
+### Steps
+1. Import the codebase into your folder:
+    ```bash
+    git pull git@github.com:Mahmh/workbox.git
+    ```
 
 2. Start the app:
-    `bash up.bash`
+    ```bash
+    bash up.bash
+    ```
 
 3. Stop the app:
-    `bash down.bash`
+    ```bash
+    bash down.bash
+    ```
