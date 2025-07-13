@@ -1,11 +1,13 @@
-from typing import List
+from typing import TypeAlias
 from pydantic import BaseModel
 
 class UserInput(BaseModel):
     grade: int
     curriculum: str
-    topics: List[str]
+    topics: list[str]
 
 class File(BaseModel):
     filename: str
     link: str
+
+Folders: TypeAlias = dict[str, list[File]]
