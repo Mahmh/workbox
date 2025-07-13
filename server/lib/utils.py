@@ -8,10 +8,10 @@ def search(query: str) -> list[File]:
     """Searches the internet using DuckDuckGo's search API, and returns the results as a list of `File`s."""
     results = []
     try:
-        search_results = DDGS().text(keywords=query, **SEARCH_CONFIG)
+        search_results = DDGS().text(query + ' filetype:pdf', **SEARCH_CONFIG)
         for result in search_results:
             file = File(
-                filename=_extract_filename(result['href']),
+                filename=result['title'],
                 link=result['href']
             )
             results.append(file)

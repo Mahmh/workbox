@@ -1,3 +1,6 @@
 fastapi
 uvicorn
 ddgs
+google-genai
+python-dotenv
+pydantic 
