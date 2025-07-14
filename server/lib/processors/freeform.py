@@ -2,7 +2,7 @@ from lib.datamodels import Folders
 from lib.utils import search, transform_folders
 from lib.constants import GEMINI_CLIENT, GEMINI_MODEL
 
-def process_freeform(user_input: str) -> Folders:
+def process(user_input: str) -> Folders:
     """
     Performs how the algorithm processes the freeform input and produces the output.
 

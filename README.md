@@ -26,7 +26,7 @@ workbox/
 ### Steps
 1. Import the codebase into your folder:
     ```bash
-    git pull git@github.com:Mahmh/workbox.git
+    git clone git@github.com:Mahmh/workbox.git
     ```
 
 2. Start the app:

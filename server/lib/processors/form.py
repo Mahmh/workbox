@@ -1,7 +1,7 @@
 from lib.datamodels import StructuredForm, Folders
 from lib.utils import search, transform_folders
 
-def process_form(user_input: StructuredForm) -> Folders:
+def process(user_input: StructuredForm) -> Folders:
     """
     Performs how the algorithm processes the structured input and produces the output.
 
