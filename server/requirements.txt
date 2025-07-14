@@ -3,4 +3,5 @@ uvicorn
 ddgs
 google-genai
 python-dotenv
-pydantic 
+pydantic
+sentence-transformers

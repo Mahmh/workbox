@@ -1,6 +1,6 @@
-from lib.utils import search
 from lib.datamodels import Folders
-from lib.constants import CLIENT, GEMINI_MODEL
+from lib.utils import search, transform_folders
+from lib.constants import GEMINI_CLIENT, GEMINI_MODEL
 
 def process_freeform(user_input: str) -> Folders:
     """
@@ -16,18 +16,35 @@ def process_freeform(user_input: str) -> Folders:
     for query in queries:
         folders[query] = search(query)
 
-    return folders
+    return transform_folders(folders)
 
 
 def _generate_queries(prompt: str) -> list[str]:
-    """Generates search queries from Gemini."""
+    """Generates several search queries from Gemini."""
     try:
-        response = CLIENT.models.generate_content(
+        response = GEMINI_CLIENT.models.generate_content(
             model=GEMINI_MODEL,
             contents=f'Generate 4 Google search queries to find revision PDFs for this prompt make sure they are not overspecific and return relaible results from google give them as a list only:\n\n\'{prompt}\''
         )
-        queries = [line.strip() for line in response.text.splitlines() if line.strip()]
+        queries = [
+            _sanitize_query(line)
+            for line in response.text.splitlines()
+            if line.strip()
+        ]
         return queries
     except Exception as e:
         print('Gemini error:', e)
         return []
+
+
+def _sanitize_query(raw_query: str) -> str:
+    """Returns the clean and user-readable form of the given raw query."""
+    query = raw_query.strip()
+
+    if query.startswith('* "'):
+        query = query[3:]
+
+    if query.endswith('"') and query.count('"') % 2 != 0:
+        query = query[:len(query)-1]
+
+    return query

@@ -1,5 +1,5 @@
 from lib.datamodels import StructuredForm, Folders
-from lib.utils import search
+from lib.utils import search, transform_folders
 
 def process_form(user_input: StructuredForm) -> Folders:
     """
@@ -14,4 +14,4 @@ def process_form(user_input: StructuredForm) -> Folders:
     for topic in user_input.topics:
         folders[topic] = search(f'{user_input.curriculum} grade {user_input.grade} {user_input.subject} {topic}')
 
-    return folders
+    return transform_folders(folders)
