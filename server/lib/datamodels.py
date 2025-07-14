@@ -1,9 +1,10 @@
 from typing import TypeAlias
 from pydantic import BaseModel
 
-class UserInput(BaseModel):
-    grade: int
+class StructuredForm(BaseModel):
     curriculum: str
+    grade: int
+    subject: str
     topics: list[str]
 
 class File(BaseModel):

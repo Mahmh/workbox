@@ -155,7 +155,8 @@ export default function ResourceFinder() {
       payload = {
         curriculum,
         grade,
-        topics: topics,
+        subject,
+        topics,
       } as StructuredInput
     }
 
