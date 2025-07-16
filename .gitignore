@@ -1,5 +1,6 @@
 .vscode/
 blueprint.png
+tasks.md
 
 **/.env
 **/__pycache__/

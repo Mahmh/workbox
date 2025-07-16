@@ -1,5 +1,6 @@
 from ddgs import DDGS
-from lib.datamodels import File, Folders
+from lib.types import Folders
+from lib.datamodels import File
 from lib.constants import SEARCH_CONFIG, SEARCH_DELAY, RELEVANCE_MODEL
 import time, random, numpy as np
 
@@ -20,13 +21,13 @@ def search(query: str) -> list[File]:
 
 def transform_folders(folders: Folders, max_files_per_folder: int = 6, threshold: float = 0.4) -> Folders:
     """Applies all folder operations at once."""
-    folders = limit_num_files(folders, max_files_per_folder)
-    folders = sort_by_relevance(folders)
-    folders = filter_irrelevant(folders, threshold)
+    folders = _limit_num_files(folders, max_files_per_folder)
+    folders = _sort_by_relevance(folders)
+    folders = _filter_irrelevant(folders, threshold)
     return folders
 
 
-def limit_num_files(folders: Folders, max_files_per_folder: int) -> Folders:
+def _limit_num_files(folders: Folders, max_files_per_folder: int) -> Folders:
     """
     Return a new Folders dict where each list of File objects
     is truncated to at most `max_files_per_folder` items.
@@ -40,7 +41,7 @@ def limit_num_files(folders: Folders, max_files_per_folder: int) -> Folders:
     return result
 
 
-def sort_by_relevance(folders: Folders) -> Folders:
+def _sort_by_relevance(folders: Folders) -> Folders:
     """
     For each folder, compute a relevance score for each `File`
     and sort that folder's list in-place (highest score first).
@@ -54,7 +55,7 @@ def sort_by_relevance(folders: Folders) -> Folders:
     return folders
 
 
-def filter_irrelevant(folders: Folders, threshold: float) -> Folders:
+def _filter_irrelevant(folders: Folders, threshold: float) -> Folders:
     """
     Return a new Folders dict where each list of File objects
     only includes those with a relevance score >= threshold.

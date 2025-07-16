@@ -1,5 +1,6 @@
-from lib.datamodels import StructuredForm, Folders
-from lib.utils import search, transform_folders
+from lib.types import Folders
+from lib.datamodels import StructuredForm
+from lib.outputs import search, transform_folders
 
 def process(user_input: StructuredForm) -> Folders:
     """

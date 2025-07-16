@@ -1,5 +1,5 @@
-from lib.datamodels import Folders
-from lib.utils import search, transform_folders
+from lib.types import Folders
+from lib.outputs import search, transform_folders
 from lib.constants import GEMINI_CLIENT, GEMINI_MODEL
 
 def process(user_input: str) -> Folders:
@@ -43,6 +43,8 @@ def _sanitize_query(raw_query: str) -> str:
 
     if query.startswith('* "'):
         query = query[3:]
+    elif query.startswith('* '):
+        query = query[2:]
 
     if query.endswith('"') and query.count('"') % 2 != 0:
         query = query[:len(query)-1]

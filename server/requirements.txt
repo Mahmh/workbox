@@ -7,3 +7,5 @@ pydantic
 sentence-transformers
 numpy
 zipstream-new
+supabase
+gotrue
