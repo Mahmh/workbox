@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Body, status
 from gotrue import User
+from lib.logger import endpoint
 from lib.types import HistoryRecordDict
 from lib.history import utils
 from lib.account.utils import get_current_user
@@ -8,6 +9,7 @@ router = APIRouter(prefix="/history")
 
 
 @router.get("")
+@endpoint
 async def get_saved_records(
     current_user: User = Depends(get_current_user),
 ) -> list[HistoryRecordDict]:
@@ -15,6 +17,7 @@ async def get_saved_records(
 
 
 @router.post("")
+@endpoint
 async def save_record(
     record: HistoryRecordDict = Body(...),
     current_user: User = Depends(get_current_user),
@@ -24,6 +27,7 @@ async def save_record(
 
 
 @router.put("")
+@endpoint
 async def rename_saved_record(
     history_id: str = Body(..., embed=True),
     new_name: str = Body(..., embed=True),
@@ -33,6 +37,7 @@ async def rename_saved_record(
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+@endpoint
 async def delete_saved_record(
     history_id: str, current_user: User = Depends(get_current_user)
 ):
