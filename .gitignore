@@ -11,4 +11,10 @@ tasks.md
 client/*.tsbuildinfo
 client/next-env.d.ts
 client/.next/
-server/archived/
+client/out/
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/.pnpm-debug.log*
+
+server/logs/

@@ -13,7 +13,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_CLIENT = genai.Client(api_key=GEMINI_API_KEY)
 
 # DuckDuckGo
-SEARCH_CONFIG = dict(region="wt-wt", max_results=15)
+SEARCH_CONFIG = dict(region="wt-wt", max_results=32)
 SEARCH_DELAY = 1.5
 
 # DB
