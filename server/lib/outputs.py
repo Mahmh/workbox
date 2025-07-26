@@ -2,7 +2,7 @@ from ddgs import DDGS
 from lib.types import Folders
 from lib.datamodels import File
 from lib.constants import SEARCH_CONFIG, SEARCH_DELAY, RELEVANCE_MODEL
-import time, random, numpy as np
+import time, random, requests, numpy as np
 
 
 def search(query: str) -> list[File]:
@@ -20,13 +20,29 @@ def search(query: str) -> list[File]:
         return results
 
 
+def check_url(url: str, timeout: float) -> bool:
+    """Returns True if `url` responds with a status code <400 (i.e. not 404/500/etc)."""
+    try:
+        # HEAD is lighter, but some servers reject it => fallback to GET
+        r = requests.head(url, allow_redirects=True, timeout=timeout)
+        if r.status_code >= 400 or r.status_code == 405:
+            r = requests.get(url, allow_redirects=True, timeout=timeout)
+        return r.status_code < 400
+    except requests.RequestException:
+        return False
+
+
 def transform_folders(
-    folders: Folders, max_files_per_folder: int = 6, threshold: float = 0.4
+    folders: Folders,
+    max_files_per_folder: int = 6,
+    threshold: float = 0.4,
+    url_check_timeout: float = 4.0,
 ) -> Folders:
     """Applies all folder operations at once."""
     folders = _sort_by_relevance(folders)
     folders = _limit_num_files(folders, max_files_per_folder)
     folders = _filter_irrelevant(folders, threshold)
+    folders = _validate_files(folders, url_check_timeout)
     return folders
 
 
@@ -87,3 +103,17 @@ def _get_relevance_score(folder_name: str, file: File) -> float:
     if norm_product == 0:
         return 0.0
     return float(np.dot(folder_emb, file_emb) / norm_product)
+
+
+def _validate_files(folders: Folders, url_check_timeout: float) -> Folders:
+    """
+    Validates all URLs in the folders and removes those that are not reachable.
+    Returns a new Folders dict with only valid URLs.
+    """
+    valid_folders = {}
+    for folder_name, files in folders.items():
+        valid_files = [
+            file for file in files if check_url(file.link, url_check_timeout)
+        ]
+        valid_folders[folder_name] = valid_files
+    return valid_folders
