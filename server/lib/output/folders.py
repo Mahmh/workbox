@@ -1,32 +1,23 @@
-from ddgs import DDGS
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.types import Folders
 from lib.datamodels import File
-from lib.constants import SEARCH_CONFIG, SEARCH_DELAY, RELEVANCE_MODEL
-import time, random, numpy as np
-
-
-def search(query: str) -> list[File]:
-    """Searches the internet using DuckDuckGo's search API, and returns the results as a list of `File`s."""
-    results = []
-    try:
-        search_results = DDGS().text(query + " filetype:pdf", **SEARCH_CONFIG)
-        for result in search_results:
-            file = File(filename=result["title"], link=result["href"])
-            results.append(file)
-    except Exception as e:
-        print(f"Error during search: {e}")
-    finally:
-        time.sleep(SEARCH_DELAY)
-        return results
+from lib.logger import errlog
+from lib.constants import RELEVANCE_MODEL
+from lib.output.url import check_url
+import random, numpy as np
 
 
 def transform_folders(
     folders: Folders, max_files_per_folder: int = 6, threshold: float = 0.4
 ) -> Folders:
     """Applies all folder operations at once."""
-    folders = _sort_by_relevance(folders)
-    folders = _limit_num_files(folders, max_files_per_folder)
-    folders = _filter_irrelevant(folders, threshold)
+    try:
+        folders = _sort_by_relevance(folders)
+        folders = _limit_num_files(folders, max_files_per_folder)
+        folders = _filter_irrelevant(folders, threshold)
+        folders = _validate_files(folders)
+    except Exception as e:
+        errlog("transform_folders", e, "folders")
     return folders
 
 
@@ -87,3 +78,32 @@ def _get_relevance_score(folder_name: str, file: File) -> float:
     if norm_product == 0:
         return 0.0
     return float(np.dot(folder_emb, file_emb) / norm_product)
+
+
+def _validate_files(folders: Folders) -> Folders:
+    """
+    Validates all URLs in the folders concurrently and removes those that are not reachable.
+    Returns a new Folders dict with only valid URLs.
+    """
+    valid_folders = {}
+
+    for folder_name, files in folders.items():
+        valid_files: list[File] = []
+
+        # Submit all URL checks to a thread pool
+        with ThreadPoolExecutor() as executor:
+            future_to_file = {
+                executor.submit(check_url, file.link): file for file in files
+            }
+
+            for future in as_completed(future_to_file):
+                file = future_to_file[future]
+                try:
+                    if future.result():
+                        valid_files.append(file)
+                except Exception as e:
+                    errlog("_validate_files", e, f"checking {file.link}")
+
+        valid_folders[folder_name] = valid_files
+
+    return valid_folders

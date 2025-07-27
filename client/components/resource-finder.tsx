@@ -145,13 +145,13 @@ export default function ResourceFinder() {
     let payload: any = null
 
     if (isFreeform) {
-      // Freeform mode: POST to /processors/freeform
-      endpoint = `${API_BASE_URL}/processors/freeform`
+      // Freeform mode: POST to /input/freeform
+      endpoint = `${API_BASE_URL}/input/freeform`
       // Frontend correctly sends the input under the 'user_input' key
       payload = { user_input: freeformInput }
     } else {
-      // Structured form mode: POST to /processors/form
-      endpoint = `${API_BASE_URL}/processors/form`
+      // Structured form mode: POST to /input/form
+      endpoint = `${API_BASE_URL}/input/form`
       payload = {
         curriculum,
         grade,
