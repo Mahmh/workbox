@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Literal
 from gotrue import User, Session
 from pydantic import BaseModel
 
@@ -22,8 +22,8 @@ class StructuredForm(BaseModel):
 
 
 class CustomFileTypes(BaseModel):
-    webpage: bool = False
-    document: bool = False
+    webpages: bool = False
+    documents: bool = False
     images: bool = False
     videos: bool = False
 
@@ -31,4 +31,4 @@ class CustomFileTypes(BaseModel):
 class File(BaseModel):
     filename: str
     link: str
-    type: str
+    type: Literal["webpage", "document", "image", "video"]

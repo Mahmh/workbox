@@ -17,4 +17,4 @@ client/yarn-debug.log*
 client/yarn-error.log*
 client/.pnpm-debug.log*
 
-server/logs/
+server/logs/*.log

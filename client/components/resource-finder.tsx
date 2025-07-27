@@ -30,8 +30,8 @@ interface ApiResponse {
 }
 
 interface FileTypes {
-  webpage: boolean
-  document: boolean
+  webpages: boolean
+  documents: boolean
   images: boolean
   videos: boolean
 }
@@ -101,8 +101,8 @@ export default function ResourceFinder() {
 
   // State for file type checkboxes
   const [fileTypes, setFileTypes] = useState<FileTypes>({
-    webpage: true,
-    document: true,
+    webpages: true,
+    documents: true,
     images: false,
     videos: false,
   })
@@ -416,7 +416,7 @@ export default function ResourceFinder() {
                     id="webpage-checkbox"
                     type="checkbox"
                     name="webpage"
-                    checked={fileTypes.webpage}
+                    checked={fileTypes.webpages}
                     onChange={handleFileTypesChange}
                     className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     disabled={loading}
@@ -430,7 +430,7 @@ export default function ResourceFinder() {
                     id="document-checkbox"
                     type="checkbox"
                     name="document"
-                    checked={fileTypes.document}
+                    checked={fileTypes.documents}
                     onChange={handleFileTypesChange}
                     className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
                     disabled={loading}
