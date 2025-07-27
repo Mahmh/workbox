@@ -1,4 +1,5 @@
-from typing import Optional, TypeAlias, Literal, TypedDict
+from typing import Optional, TypeAlias, Literal
+from typing_extensions import TypedDict
 from lib.datamodels import File, StructuredForm
 
 Folders: TypeAlias = dict[str, list[File]]
