@@ -30,11 +30,21 @@ workbox/
     ```
 
 2. Start the app:
-    ```bash
-    bash up.bash
-    ```
+    - Development mode:
+        ```bash
+        bash up.bash
+        ```
+    - Production mode:
+        ```bash
+        bash up.bash --prod
+        ```
 
 3. Stop the app:
-    ```bash
-    bash down.bash
-    ```
+    - Development mode:
+        ```bash
+        bash down.bash
+        ```
+    - Production mode:
+        ```bash
+        bash down.bash --prod
+        ```

@@ -1,20 +1,32 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.types import Folders
 from lib.outputs import search, transform_folders
 from lib.constants import GEMINI_CLIENT, GEMINI_MODEL
 
+
 def process(user_input: str) -> Folders:
     """
-    Performs how the algorithm processes the freeform input and produces the output.
+    Processes the freeform input and produces the output.
 
-    This function returns a dictionary where:
-    - keys = folder names
+    Returns a dictionary where:
+    - keys = folder names (queries)
     - values = the folder's files
     """
     folders = {}
+    futures = {}
     queries = _generate_queries(user_input)
 
-    for query in queries:
-        folders[query] = search(query)
+    with ThreadPoolExecutor() as executor:
+        for query in queries:
+            futures[executor.submit(search, query)] = query
+
+        for future in as_completed(futures):
+            query = futures[future]
+            try:
+                folders[query] = future.result()
+            except Exception as e:
+                print(f"Search failed for query '{query}': {e}")
+                folders[query] = []
 
     return transform_folders(folders)
 
@@ -24,16 +36,14 @@ def _generate_queries(prompt: str) -> list[str]:
     try:
         response = GEMINI_CLIENT.models.generate_content(
             model=GEMINI_MODEL,
-            contents=f'Generate 4 Google search queries to find revision PDFs for this prompt make sure they are not overspecific and return relaible results from google give them as a list only:\n\n\'{prompt}\''
+            contents=f"Generate 4 Google search queries to find revision documents for this prompt make sure they are not overspecific and return relaible results from google give them as a list only:\n\n'{prompt}'",
         )
         queries = [
-            _sanitize_query(line)
-            for line in response.text.splitlines()
-            if line.strip()
+            _sanitize_query(line) for line in response.text.splitlines() if line.strip()
         ]
         return queries
     except Exception as e:
-        print('Gemini error:', e)
+        print("Gemini error:", e)
         return []
 
 
@@ -43,10 +53,10 @@ def _sanitize_query(raw_query: str) -> str:
 
     if query.startswith('* "'):
         query = query[3:]
-    elif query.startswith('* '):
+    elif query.startswith("* "):
         query = query[2:]
 
     if query.endswith('"') and query.count('"') % 2 != 0:
-        query = query[:len(query)-1]
+        query = query[: len(query) - 1]
 
     return query

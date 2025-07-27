@@ -4,9 +4,10 @@ from lib.types import Folders
 from lib.datamodels import File
 import os, requests
 
+
 def make_zip_file(folders: Folders) -> ZipFile:
     """Converts the given folders into a zip file and returns it."""
-    z = ZipFile(mode='w', compression=ZIP_DEFLATED)
+    z = ZipFile(mode="w", compression=ZIP_DEFLATED)
 
     for folder_name, files in folders.items():
         for file in files:
@@ -16,7 +17,7 @@ def make_zip_file(folders: Folders) -> ZipFile:
                     r = requests.get(file.link, stream=True)
                     r.raise_for_status()
                 except Exception as e:
-                    print(f'Error fetching {file.link}: {e}')
+                    print(f"Error fetching {file.link}: {e}")
                     z = _add_url_file(file, folder_name, z)
                     continue
 
@@ -40,11 +41,8 @@ def _add_url_file(file: File, folder_name: str, z: ZipFile) -> ZipFile:
     """Adds a `.url` shortcut file to the zip file and returns it."""
     # no extension: create a .url shortcut file
     shortcut_name = f"{file.filename}.url"
-    content = (
-        '[InternetShortcut]\r\n'
-        f'URL={file.link}\r\n'
-    )
+    content = "[InternetShortcut]\r\n" f"URL={file.link}\r\n"
     # write shortcut as a tiny text‐file stream
-    arcname = f'{folder_name}/{shortcut_name}'
-    z.write_iter(arcname, iter([content.encode('utf-8')]))
+    arcname = f"{folder_name}/{shortcut_name}"
+    z.write_iter(arcname, iter([content.encode("utf-8")]))
     return z

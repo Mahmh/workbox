@@ -1,18 +1,31 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.types import Folders
 from lib.datamodels import StructuredForm
 from lib.outputs import search, transform_folders
+
 
 def process(user_input: StructuredForm) -> Folders:
     """
     Performs how the algorithm processes the structured input and produces the output.
 
-    This function returns a dictionary where:
+    Returns a dictionary where:
     - keys = folder names
     - values = the folder's files
     """
     folders = {}
+    futures = {}
 
-    for topic in user_input.topics:
-        folders[topic] = search(f'{user_input.curriculum} grade {user_input.grade} {user_input.subject} {topic}')
+    with ThreadPoolExecutor() as executor:
+        for topic in user_input.topics:
+            query = f"{user_input.curriculum} grade {user_input.grade} {user_input.subject} {topic}"
+            futures[executor.submit(search, query)] = topic
+
+        for future in as_completed(futures):
+            topic = futures[future]
+            try:
+                folders[topic] = future.result()
+            except Exception as e:
+                print(f"Search failed for topic '{topic}': {e}")
+                folders[topic] = []
 
     return transform_folders(folders)
