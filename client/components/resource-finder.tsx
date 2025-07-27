@@ -16,6 +16,7 @@ import {
 interface StructuredInput {
   curriculum: string
   grade: string
+  subject: string
   topics: string[]
 }
 
@@ -28,6 +29,13 @@ interface ApiResponse {
   [folderName: string]: FileResult[]
 }
 
+interface FileTypes {
+  webpage: boolean
+  document: boolean
+  images: boolean
+  videos: boolean
+}
+
 // TopicResultItem component
 interface TopicResultProps {
   topic: string
@@ -37,7 +45,7 @@ interface TopicResultProps {
 
 const TopicResultItem: React.FC<TopicResultProps> = ({ topic, files, subject }) => {
   const [isOpen, setIsOpen] = useState(false)
-  
+
   // Format the folder name: display "subject/topic" only if subject is provided, otherwise just "topic"
   const folderName = subject && subject.trim() !== '' ? `${subject}/${topic}` : topic;
 
@@ -91,13 +99,21 @@ export default function ResourceFinder() {
   const [freeformInput, setFreeformInput] = useState("")
   const [isFreeform, setIsFreeform] = useState(false) // false: structured form, true: free form
 
+  // State for file type checkboxes
+  const [fileTypes, setFileTypes] = useState<FileTypes>({
+    webpage: true,
+    document: true,
+    images: false,
+    videos: false,
+  })
+
   // General state
   const [results, setResults] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // --- Utility functions for structured form topic management ---
-  
+
   // Wrapped in useCallback to ensure reliable state capture and prevent issues on initial render
   const addTopic = useCallback(() => {
     if (currentTopic.trim() && !topics.includes(currentTopic.trim())) {
@@ -118,12 +134,20 @@ export default function ResourceFinder() {
     }
   }, [addTopic])
 
+  // Handler for file type checkbox changes
+  const handleFileTypesChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setFileTypes({
+      ...fileTypes,
+      [event.target.name]: event.target.checked,
+    })
+  }
+
   // --- Tab switching and input clearing ---
   const switchMode = (mode: 'structured' | 'freeform') => {
     setIsFreeform(mode === 'freeform')
     setResults(null)
     setError(null)
-    
+
     // Clear ALL inputs when switching modes to ensure a clean slate
     setFreeformInput('')
     setCurriculum('')
@@ -140,54 +164,57 @@ export default function ResourceFinder() {
     setError(null)
     setResults(null)
 
-    const API_BASE_URL = 'http://localhost:8000'
-    let endpoint = ''
-    let payload: any = null
+    const API_BASE_URL = 'http://localhost:8000';
+    let endpoint = '';
+    let payload: any = null;
 
     if (isFreeform) {
       // Freeform mode: POST to /input/freeform
-      endpoint = `${API_BASE_URL}/input/freeform`
-      // Frontend correctly sends the input under the 'user_input' key
-      payload = { user_input: freeformInput }
+      endpoint = `${API_BASE_URL}/input/freeform`;
+      payload = {
+        user_input: freeformInput,
+        file_types: fileTypes
+      };
     } else {
       // Structured form mode: POST to /input/form
-      endpoint = `${API_BASE_URL}/input/form`
+      endpoint = `${API_BASE_URL}/input/form`;
+      // Correctly nest the structured form data under the 'user_input' key
       payload = {
-        curriculum,
-        grade,
-        subject,
-        topics,
-      } as StructuredInput
+        user_input: {
+          curriculum,
+          grade,
+          subject,
+          topics,
+        },
+        file_types: fileTypes,
+      };
     }
 
     try {
-      // Use POST request for both endpoints
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload)
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.text()
-        // Display the detailed error from the backend (e.g., the 422 error)
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`)
+        const errorData = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
       }
 
-      const data: ApiResponse = await response.json()
-      setResults(data)
+      const data: ApiResponse = await response.json();
+      setResults(data);
 
     } catch (error: any) {
-      console.error("Error fetching data:", error)
-      // Provide a more user-friendly error message if fetch fails
-      setError(error.message || "An error occurred while fetching data. Check your connection to the server.")
+      console.error("Error fetching data:", error);
+      setError(error.message || "An error occurred while fetching data. Check your connection to the server.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
-  
+
   const resultTopics = useMemo(() => (results ? Object.keys(results) : []), [results])
 
   // Calculate the total number of files found across all topics
@@ -196,15 +223,15 @@ export default function ResourceFinder() {
     let count = 0;
     // Iterate over the files array for each topic and sum the lengths
     for (const topicFiles of Object.values(results)) {
-        count += topicFiles.length;
+      count += topicFiles.length;
     }
     return count;
   }, [results]);
 
   // Determine if the submit button should be disabled
   const isSubmitDisabled = loading || (
-    isFreeform 
-      ? freeformInput.trim() === '' 
+    isFreeform
+      ? freeformInput.trim() === ''
       : (curriculum.trim() === '' || grade.trim() === '' || subject.trim() === '' || topics.length === 0)
   )
 
@@ -348,30 +375,30 @@ export default function ResourceFinder() {
   return (
     <div className="flex items-center justify-center min-h-screen p-8 bg-gray-100">
       <div className="container-box max-w-6xl w-full bg-white border border-gray-300 shadow-xl rounded-lg overflow-hidden flex flex-col lg:flex-row">
-        
+
         {/* Input Section */}
         <div className="w-full lg:w-1/2 border-r border-gray-300">
           <div className="bg-[#4CAF50] text-white p-4 font-bold text-xl">Input</div>
-          
+
           {/* Tab Navigation */}
           <div className="flex border-b border-gray-200">
             <button
               onClick={() => switchMode('structured')}
-              className={`px-8 py-3 text-lg font-semibold transition-colors duration-200 focus:outline-none 
-                          ${!isFreeform 
-                              ? 'border-b-4 border-green-600 text-green-700 bg-gray-50' 
-                              : 'text-gray-500 hover:text-gray-700'}`
-                          }
+              className={`px-8 py-3 text-lg font-semibold transition-colors duration-200 focus:outline-none
+                          ${!isFreeform
+                  ? 'border-b-4 border-green-600 text-green-700 bg-gray-50'
+                  : 'text-gray-500 hover:text-gray-700'}`
+              }
             >
               Structured Form
             </button>
             <button
               onClick={() => switchMode('freeform')}
-              className={`px-8 py-3 text-lg font-semibold transition-colors duration-200 focus:outline-none 
-                          ${isFreeform 
-                              ? 'border-b-4 border-green-600 text-green-700 bg-gray-50' 
-                              : 'text-gray-500 hover:text-gray-700'}`
-                          }
+              className={`px-8 py-3 text-lg font-semibold transition-colors duration-200 focus:outline-none
+                          ${isFreeform
+                  ? 'border-b-4 border-green-600 text-green-700 bg-gray-50'
+                  : 'text-gray-500 hover:text-gray-700'}`
+              }
             >
               Free Form Input
             </button>
@@ -379,7 +406,70 @@ export default function ResourceFinder() {
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {renderInputs()}
-            
+
+            {/* File Type Checkboxes */}
+            <div className="pt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">File Types</label>
+              <div className="flex flex-wrap gap-x-6 gap-y-2">
+                <div className="flex items-center">
+                  <input
+                    id="webpage-checkbox"
+                    type="checkbox"
+                    name="webpage"
+                    checked={fileTypes.webpage}
+                    onChange={handleFileTypesChange}
+                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    disabled={loading}
+                  />
+                  <label htmlFor="webpage-checkbox" className="ml-2 text-sm text-gray-700">
+                    Webpages
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="document-checkbox"
+                    type="checkbox"
+                    name="document"
+                    checked={fileTypes.document}
+                    onChange={handleFileTypesChange}
+                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    disabled={loading}
+                  />
+                  <label htmlFor="document-checkbox" className="ml-2 text-sm text-gray-700">
+                    Documents (.pdf, .ppt, .docx)
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="images-checkbox"
+                    type="checkbox"
+                    name="images"
+                    checked={fileTypes.images}
+                    onChange={handleFileTypesChange}
+                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    disabled={loading}
+                  />
+                  <label htmlFor="images-checkbox" className="ml-2 text-sm text-gray-700">
+                    Images
+                  </label>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    id="videos-checkbox"
+                    type="checkbox"
+                    name="videos"
+                    checked={fileTypes.videos}
+                    onChange={handleFileTypesChange}
+                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    disabled={loading}
+                  />
+                  <label htmlFor="videos-checkbox" className="ml-2 text-sm text-gray-700">
+                    Videos
+                  </label>
+                </div>
+              </div>
+            </div>
+
             {/* Process Button */}
             <button
               type="submit"
@@ -388,7 +478,7 @@ export default function ResourceFinder() {
                 isSubmitDisabled
                   ? "bg-gray-400 cursor-not-allowed text-gray-600"
                   : "bg-[#4CAF50] text-white hover:bg-green-600"
-              }`}
+                }`}
             >
               {loading ? "Processing..." : "Find Resources"}
             </button>
@@ -417,12 +507,12 @@ export default function ResourceFinder() {
                   Found {totalFileCount} resources across {resultTopics.length} topic{resultTopics.length !== 1 ? "s" : ""}
                 </div>
                 {resultTopics.map((topic) => (
-                  <TopicResultItem 
-                    key={topic} 
-                    topic={topic} 
-                    files={results[topic]} 
+                  <TopicResultItem
+                    key={topic}
+                    topic={topic}
+                    files={results[topic]}
                     // Pass 'subject' only if in structured form; otherwise, pass an empty string
-                    subject={!isFreeform ? subject : ""} 
+                    subject={!isFreeform ? subject : ""}
                   />
                 ))}
               </div>
