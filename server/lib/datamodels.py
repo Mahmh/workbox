@@ -21,6 +21,14 @@ class StructuredForm(BaseModel):
     topics: list[str]
 
 
+class CustomFileTypes(BaseModel):
+    webpage: bool = False
+    document: bool = False
+    images: bool = False
+    videos: bool = False
+
+
 class File(BaseModel):
     filename: str
     link: str
+    type: str

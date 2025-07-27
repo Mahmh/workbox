@@ -12,9 +12,25 @@ GEMINI_MODEL = "gemini-1.5-flash"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_CLIENT = genai.Client(api_key=GEMINI_API_KEY)
 
-# DuckDuckGo
+# Search (DuckDuckGo)
 SEARCH_CONFIG = dict(region="wt-wt", max_results=32)
 SEARCH_DELAY = 1.5
+URL_CHECK_TIMEOUT = 6.5
+
+DOCUMENT_EXT_TO_MIME = {
+    "pdf": ["application/pdf"],
+    "doc": ["application/msword"],
+    "docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+    "xls": ["application/vnd.ms-excel"],
+    "xlsx": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+    "ppt": ["application/vnd.ms-powerpoint"],
+    "pptx": [
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    ],
+    "odt": ["application/vnd.oasis.opendocument.text"],
+    "txt": ["text/plain"],
+    "md": ["text/markdown", "text/plain"],
+}
 
 # DB
 SUPABASE_ANON_PUBLIC_KEY = os.getenv("SUPABASE_ANON_PUBLIC_KEY")

@@ -1,10 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.types import Folders
-from lib.outputs import search, transform_folders
+from lib.datamodels import CustomFileTypes
+from lib.output.search import search
+from lib.output.folders import transform_folders
 from lib.constants import GEMINI_CLIENT, GEMINI_MODEL
 
 
-def process(user_input: str) -> Folders:
+def process(user_input: str, file_types: CustomFileTypes) -> Folders:
     """
     Processes the freeform input and produces the output.
 
@@ -18,7 +20,7 @@ def process(user_input: str) -> Folders:
 
     with ThreadPoolExecutor() as executor:
         for query in queries:
-            futures[executor.submit(search, query)] = query
+            futures[executor.submit(search, query, file_types)] = query
 
         for future in as_completed(futures):
             query = futures[future]

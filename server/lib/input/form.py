@@ -1,10 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.types import Folders
-from lib.datamodels import StructuredForm
-from lib.outputs import search, transform_folders
+from lib.datamodels import StructuredForm, CustomFileTypes
+from lib.output.search import search
+from lib.output.folders import transform_folders
 
 
-def process(user_input: StructuredForm) -> Folders:
+def process(user_input: StructuredForm, file_types: CustomFileTypes) -> Folders:
     """
     Performs how the algorithm processes the structured input and produces the output.
 
@@ -18,7 +19,7 @@ def process(user_input: StructuredForm) -> Folders:
     with ThreadPoolExecutor() as executor:
         for topic in user_input.topics:
             query = f"{user_input.curriculum} grade {user_input.grade} {user_input.subject} {topic}"
-            futures[executor.submit(search, query)] = topic
+            futures[executor.submit(search, query, file_types)] = topic
 
         for future in as_completed(futures):
             topic = futures[future]
