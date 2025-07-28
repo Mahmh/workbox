@@ -14,7 +14,9 @@ services:
       context: ./client
       dockerfile: Dockerfile.prod
     container_name: client_c
-    depends_on:
-      - server
+    env_file:
+      - ./.env
     ports:
       - "3000:3000"
+    depends_on:
+      - server

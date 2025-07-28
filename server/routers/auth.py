@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, status
 from gotrue import User
 from lib.logger import endpoint
-from lib.account import utils
+from lib.auth import utils
 from lib.datamodels import Credentials, LoggedInSession
 
-router = APIRouter(prefix="/account")
+router = APIRouter(prefix="/auth")
 
 
 @router.post("/login")

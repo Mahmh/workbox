@@ -8,13 +8,17 @@ import random, numpy as np
 
 
 def transform_folders(
-    folders: Folders, max_files_per_folder: int = 6, threshold: float = 0.4
+    folders: Folders,
+    max_files_per_folder: int = 6,
+    threshold: float = 0.4,
+    max_filename_length: int = 100,
 ) -> Folders:
     """Applies all folder operations at once."""
     try:
         folders = _sort_by_relevance(folders)
         folders = _limit_num_files(folders, max_files_per_folder)
         folders = _filter_irrelevant(folders, threshold)
+        folders = _truncate_filenames(folders, max_filename_length)
         folders = _validate_files(folders)
     except Exception as e:
         errlog("transform_folders", e, "folders")
@@ -78,6 +82,18 @@ def _get_relevance_score(folder_name: str, file: File) -> float:
     if norm_product == 0:
         return 0.0
     return float(np.dot(folder_emb, file_emb) / norm_product)
+
+
+def _truncate_filenames(folders: Folders, max_length: int) -> Folders:
+    """
+    Truncates all filenames in the folders to a maximum length,
+    appending '...' if truncated.
+    """
+    for _, files in folders.items():
+        for file in files:
+            if len(file.filename) > max_length:
+                file.filename = file.filename[:max_length] + "..."
+    return folders
 
 
 def _validate_files(folders: Folders) -> Folders:

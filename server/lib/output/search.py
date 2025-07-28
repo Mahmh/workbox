@@ -16,14 +16,19 @@ def search(query: str, file_types: CustomFileTypes) -> list[File]:
     results: list[File] = []
 
     if not any(
-        [file_types.webpage, file_types.document, file_types.images, file_types.videos]
+        [
+            file_types.webpages,
+            file_types.documents,
+            file_types.images,
+            file_types.videos,
+        ]
     ):
         # avoid mutating the original; create an updated copy
         file_types = file_types.model_copy(
             update={"webpage": True, "document": True, "images": True, "videos": True}
         )
 
-    if file_types.webpage or file_types.document:
+    if file_types.webpages or file_types.documents:
         results.extend(_search_text(query, file_types))
 
     if file_types.images:
@@ -44,9 +49,9 @@ def _search_text(query: str, file_types: CustomFileTypes) -> list[File]:
 
     # build allowed extensions
     exts: list[LiteralString] = []
-    if file_types.document:
+    if file_types.documents:
         exts.extend(list(DOCUMENT_EXT_TO_MIME.keys()))
-    if file_types.webpage:
+    if file_types.webpages:
         exts.append("html")
 
     # build query string
@@ -73,8 +78,9 @@ def _search_text(query: str, file_types: CustomFileTypes) -> list[File]:
         if exts and not any(matches_type(url, ext) for ext in exts):
             return None
 
+        title = hit.get("title", "")
         file_type = "webpage" if matches_type(url, "html") else "document"
-        return File(filename=hit["title"], link=url, type=file_type)
+        return File(filename=title, link=url, type=file_type)
 
     with ThreadPoolExecutor() as executor:
         for file in executor.map(_process_hit, hits):
@@ -87,7 +93,7 @@ def _search_text(query: str, file_types: CustomFileTypes) -> list[File]:
 
 def _search_images(query: str) -> list[File]:
     """
-    Searches DuckDuckGo image results and returns them as Files with type 'image'.
+    Searches DuckDuckGo image results and returns them as Files with type `image`.
     """
     results: list[File] = []
 
@@ -107,14 +113,17 @@ def _search_images(query: str) -> list[File]:
 
 def _search_videos(query: str) -> list[File]:
     """
-    Searches DuckDuckGo video results and returns them as Files with type 'video'.
+    Searches DuckDuckGo video results and returns them as Files with type `video`.
     """
     results: list[File] = []
 
     try:
         for r in DDGS().videos(query, **SEARCH_CONFIG):
             title = r.get("title", "")
-            results.append(File(filename=title, link=r["href"], type="video"))
+            url = r.get("content") or r.get("embed_url")
+            if not url:
+                continue
+            results.append(File(filename=title, link=url, type="video"))
     except Exception as e:
         errlog("_search_videos", e, "search")
     finally:

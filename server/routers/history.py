@@ -3,7 +3,7 @@ from gotrue import User
 from lib.logger import endpoint
 from lib.types import HistoryRecordDict
 from lib.history import utils
-from lib.account.utils import get_current_user
+from lib.auth.utils import get_current_user
 
 router = APIRouter(prefix="/history")
 
