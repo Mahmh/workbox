@@ -1,3 +1,4 @@
+// resource-finder.tsx
 "use client"
 
 import type React from "react"
@@ -24,12 +25,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { Folder, ChevronDown, GraduationCap, BookOpen, X, Plus, Download, Loader2 } from "lucide-react"
+import { Folder, ChevronDown, GraduationCap, BookOpen, X, Plus, Download, Loader2, RefreshCw } from "lucide-react"
 
-// Define interfaces for structured input data and API response
+// Update the StructuredInput interface to match the backend schema
 interface StructuredInput {
   curriculum: string
-  grade: string
+  grade: number // This should be number to match your example
   subject: string
   topics: string[]
 }
@@ -37,6 +38,7 @@ interface StructuredInput {
 interface FileResult {
   filename: string
   link: string
+  type: string // Added type based on output schema
 }
 
 interface ApiResponse {
@@ -48,6 +50,16 @@ interface FileTypes {
   documents: boolean
   images: boolean
   videos: boolean
+}
+
+// Add an interface for HistoryRecord (copied from AppSidebar for consistency)
+interface HistoryRecord {
+  id: string
+  name: string
+  created_at: string
+  input_type: "form" | "freeform"
+  input: StructuredInput | string // More specific type
+  output: ApiResponse // More specific type
 }
 
 // TopicResultItem component
@@ -62,22 +74,22 @@ const TopicResultItem: React.FC<TopicResultProps> = ({ topic, files, subject }) 
   const folderName = subject && subject.trim() !== "" ? `${subject}/${topic}` : topic
 
   return (
-    <Card className="mb-4 border-gray-200 hover:shadow-md transition duration-150">
-      <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => setIsOpen(!isOpen)}>
+    <Card className="mb-4 border-border hover:shadow-md transition duration-150">
+      <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => setIsOpen(!isOpen)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Folder className="h-5 w-5 text-yellow-500" />
-            <CardTitle className="text-lg text-gray-800">{folderName}</CardTitle>
+            <CardTitle className="text-lg text-foreground">{folderName}</CardTitle>
           </div>
           <ChevronDown
-            className={`h-5 w-5 text-gray-500 transition-transform duration-200 ${isOpen ? "rotate-0" : "-rotate-90"}`}
+            className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-0" : "-rotate-90"}`}
           />
         </div>
       </CardHeader>
       {isOpen && (
         <CardContent>
           {files.length > 0 ? (
-            <ul className="space-y-2 text-gray-700">
+            <ul className="space-y-2 text-foreground">
               {files.map((file, index) => (
                 <li key={index} className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
@@ -93,7 +105,7 @@ const TopicResultItem: React.FC<TopicResultProps> = ({ topic, files, subject }) 
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500 italic">No files found for this topic.</p>
+            <p className="text-muted-foreground italic">No files found for this topic.</p>
           )}
         </CardContent>
       )}
@@ -131,7 +143,31 @@ export default function ResourceFinder() {
   const [isDownloading, setIsDownloading] = useState(false)
   const [autoSaveEnabled, setAutoSaveEnabled] = useState(true)
 
-  // Auto-save function
+  // State to hold the selected history record
+  const [selectedHistoryRecord, setSelectedHistoryRecord] = useState<HistoryRecord | null>(null)
+
+  // Function to clear all form fields and start a new session
+  const startNewSession = useCallback(() => {
+    setGrade("")
+    setCurriculum("")
+    setSubject("")
+    setTopics([])
+    setCurrentTopic("")
+    setFreeformInput("")
+    setResults(null)
+    setError(null)
+    setSelectedHistoryRecord(null)
+    setActiveTab("structured") // Reset to structured tab by default
+    setFileTypes({
+      // Reset file types to default
+      webpages: true,
+      documents: true,
+      images: false,
+      videos: false,
+    })
+  }, [])
+
+  // Auto-save function - Fixed version
   const autoSaveToHistory = useCallback(
     async (searchResults: ApiResponse) => {
       if (!user || !autoSaveEnabled || !searchResults) return
@@ -139,8 +175,8 @@ export default function ResourceFinder() {
       try {
         const token = getAccessToken()
 
-        // Generate a unique ID for the history record
-        const historyId = `hist_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        // Generate a proper UUID for the history record
+        const historyId = crypto.randomUUID()
 
         // Prepare the history record based on the exact schema
         let historyRecord: any
@@ -150,25 +186,25 @@ export default function ResourceFinder() {
             id: historyId,
             user_id: user.id,
             name: freeformInput.slice(0, 50) + (freeformInput.length > 50 ? "..." : ""),
-            input_type: "freeform" as const,
+            input_type: "freeform",
             input: freeformInput, // Just the string for freeform
-            output: {} as { [key: string]: Array<{ filename: string; link: string; type: string }> },
-            created_at: new Date().toISOString(), // Add this line
+            output: {},
+            created_at: new Date().toISOString(),
           }
         } else {
           historyRecord = {
             id: historyId,
             user_id: user.id,
             name: `${subject} - ${curriculum} Grade ${grade}`,
-            input_type: "form" as const,
+            input_type: "form",
             input: {
-              curriculum,
-              grade: Number.parseInt(grade) || 0,
-              subject,
-              topics,
+              curriculum: curriculum,
+              grade: Number.parseInt(grade) || 0, // Ensure it's a number
+              subject: subject,
+              topics: topics,
             },
-            output: {} as { [key: string]: Array<{ filename: string; link: string; type: string }> },
-            created_at: new Date().toISOString(), // Add this line
+            output: {},
+            created_at: new Date().toISOString(),
           }
         }
 
@@ -196,7 +232,7 @@ export default function ResourceFinder() {
           console.log("Search auto-saved to history successfully")
         } else {
           const errorData = await response.json()
-          console.error("Failed to auto-save to history:", errorData)
+          console.error("Failed to auto-save to history:", response.status, errorData)
         }
       } catch (error) {
         console.error("Failed to auto-save to history:", error)
@@ -247,6 +283,7 @@ export default function ResourceFinder() {
     setSubject("")
     setTopics([])
     setCurrentTopic("")
+    setSelectedHistoryRecord(null) // Clear selected history record on tab change
   }
 
   const downloadResults = async () => {
@@ -283,6 +320,114 @@ export default function ResourceFinder() {
     }
   }
 
+  // New function to load a history record into the form - FIXED VERSION
+  const loadHistoryRecord = useCallback((record: HistoryRecord) => {
+    console.log("Loading history record:", record)
+    setResults(null) // Clear previous results
+    setError(null) // Clear any previous errors
+    setSelectedHistoryRecord(record) // Store the selected record
+
+    // Set active tab based on input_type
+    setActiveTab(record.input_type)
+
+    // Populate form fields
+    if (record.input_type === "form") {
+      // For structured form, the input should be an object like:
+      // {"grade": 11, "topics": ["vectors"], "subject": "Mathematics", "curriculum": "edexcel igcse maths"}
+
+      let input: any
+
+      // Handle case where input might be a string that needs parsing
+      if (typeof record.input === "string") {
+        try {
+          input = JSON.parse(record.input)
+        } catch (e) {
+          console.error("Failed to parse structured input:", e)
+          input = {}
+        }
+      } else {
+        input = record.input
+      }
+
+      console.log("Parsed structured input:", input)
+
+      // Set curriculum
+      if (input.curriculum) {
+        setCurriculum(input.curriculum)
+        console.log("Setting curriculum to:", input.curriculum)
+      }
+
+      // Set grade - convert number to string for input field
+      if (input.grade !== undefined && input.grade !== null) {
+        setGrade(String(input.grade))
+        console.log("Setting grade to:", String(input.grade))
+      }
+
+      // Set subject
+      if (input.subject) {
+        setSubject(input.subject)
+        console.log("Setting subject to:", input.subject)
+      }
+
+      // Set topics - ensure it's an array
+      if (Array.isArray(input.topics)) {
+        setTopics(input.topics)
+        console.log("Setting topics to:", input.topics)
+      } else {
+        setTopics([])
+        console.log("No valid topics found, setting empty array")
+      }
+
+      // Clear freeform input
+      setFreeformInput("")
+      console.log("Clearing freeform input.")
+    } else {
+      // freeform
+      console.log("Record input type is 'freeform'. Input data:", record.input)
+
+      // For freeform, input should be a string
+      const freeformText = typeof record.input === "string" ? record.input : String(record.input || "")
+      setFreeformInput(freeformText)
+      console.log("Setting freeform input to:", freeformText)
+
+      // Clear structured inputs
+      setCurriculum("")
+      setGrade("")
+      setSubject("")
+      setTopics([])
+      console.log("Clearing structured inputs.")
+    }
+
+    // Load and display the historical results
+    if (record.output && typeof record.output === "object") {
+      // Transform the output to match our ApiResponse format
+      const transformedOutput: ApiResponse = {}
+      Object.entries(record.output).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          transformedOutput[key] = value.map((item: any) => ({
+            filename: item.filename || "",
+            link: item.link || "",
+            type: item.type || "webpage",
+          }))
+        }
+      })
+      setResults(transformedOutput)
+      console.log("Setting results to:", transformedOutput)
+    } else {
+      setResults(null)
+      console.log("No results to display.")
+    }
+
+    // Reset file types to default when loading from history
+    setFileTypes({
+      webpages: true,
+      documents: true,
+      images: false,
+      videos: false,
+    })
+    console.log("Resetting file types to default.")
+  }, [])
+
   // Form submission handler
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -305,7 +450,7 @@ export default function ResourceFinder() {
       payload = {
         user_input: {
           curriculum,
-          grade,
+          grade: Number.parseInt(grade) || 0, // Ensure grade is passed as a number to the backend
           subject,
           topics,
         },
@@ -366,25 +511,37 @@ export default function ResourceFinder() {
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="grid auto-rows-min gap-4 md:grid-cols-2">
           {/* Input Section */}
-          <Card className="aspect-auto border-gray-200">
-            <CardHeader className="bg-[#05233d] text-white">
-              <CardTitle className="flex items-center space-x-2">
-                <GraduationCap className="h-5 w-5" />
-                <span>Search Parameters</span>
-              </CardTitle>
+          <Card className="aspect-auto border-border">
+            <CardHeader className="bg-primary text-white">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <GraduationCap className="h-5 w-5" />
+                  <span>Search Parameters</span>
+                </CardTitle>
+                <Button
+                  onClick={startNewSession} // New Session button
+                  size="sm"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-primary bg-transparent"
+                  title="Start a New Search Session"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  New Session
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="p-6">
               <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger
                     value="structured"
-                    className="data-[state=active]:bg-[#05233d] data-[state=active]:text-white"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-white"
                   >
                     Structured Form
                   </TabsTrigger>
                   <TabsTrigger
                     value="freeform"
-                    className="data-[state=active]:bg-[#05233d] data-[state=active]:text-white"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-white"
                   >
                     Free Form
                   </TabsTrigger>
@@ -393,7 +550,7 @@ export default function ResourceFinder() {
                 <form onSubmit={handleSubmit} className="mt-6 space-y-6">
                   <TabsContent value="structured" className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="curriculum" className="text-gray-700 font-medium">
+                      <Label htmlFor="curriculum" className="text-foreground font-medium">
                         Curriculum
                       </Label>
                       <Input
@@ -403,12 +560,12 @@ export default function ResourceFinder() {
                         placeholder="e.g., Common Core, IB, Cambridge"
                         required
                         disabled={loading}
-                        className="focus:border-[#05233d] focus:ring-[#05233d]"
+                        className="focus:border-primary focus:ring-primary"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="grade" className="text-gray-700 font-medium">
+                      <Label htmlFor="grade" className="text-foreground font-medium">
                         Grade Year
                       </Label>
                       <Input
@@ -419,12 +576,12 @@ export default function ResourceFinder() {
                         placeholder="e.g., 9"
                         required
                         disabled={loading}
-                        className="focus:border-[#05233d] focus:ring-[#05233d]"
+                        className="focus:border-primary focus:ring-primary"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="subject" className="text-gray-700 font-medium">
+                      <Label htmlFor="subject" className="text-foreground font-medium">
                         Subject
                       </Label>
                       <Input
@@ -434,12 +591,12 @@ export default function ResourceFinder() {
                         placeholder="e.g., Mathematics, Science, English"
                         required
                         disabled={loading}
-                        className="focus:border-[#05233d] focus:ring-[#05233d]"
+                        className="focus:border-primary focus:ring-primary"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="topics" className="text-gray-700 font-medium">
+                      <Label htmlFor="topics" className="text-foreground font-medium">
                         Topics
                       </Label>
                       <div className="flex space-x-2">
@@ -450,13 +607,13 @@ export default function ResourceFinder() {
                           onKeyPress={handleKeyPress}
                           placeholder="e.g., Algebra, Geometry, Fractions"
                           disabled={loading}
-                          className="focus:border-[#05233d] focus:ring-[#05233d]"
+                          className="focus:border-primary focus:ring-primary"
                         />
                         <Button
                           type="button"
                           onClick={addTopic}
                           disabled={loading}
-                          className="bg-[#05233d] hover:bg-[#031220] text-white"
+                          className="bg-primary hover:bg-primary/90 text-white"
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
@@ -465,10 +622,10 @@ export default function ResourceFinder() {
 
                     {topics.length > 0 && (
                       <div className="space-y-2">
-                        <Label className="text-gray-700 font-medium">Added Topics ({topics.length})</Label>
+                        <Label className="text-foreground font-medium">Added Topics ({topics.length})</Label>
                         <div className="flex flex-wrap gap-2">
                           {topics.map((topic, index) => (
-                            <Badge key={index} className="bg-[#05233d] text-white flex items-center space-x-1">
+                            <Badge key={index} className="bg-primary text-white flex items-center space-x-1">
                               <span>{topic}</span>
                               <button
                                 type="button"
@@ -486,7 +643,7 @@ export default function ResourceFinder() {
 
                   <TabsContent value="freeform" className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="freeform" className="text-gray-700 font-medium">
+                      <Label htmlFor="freeform" className="text-foreground font-medium">
                         Free Text Input
                       </Label>
                       <Textarea
@@ -497,14 +654,14 @@ export default function ResourceFinder() {
                         rows={6}
                         required
                         disabled={loading}
-                        className="focus:border-[#05233d] focus:ring-[#05233d] resize-none"
+                        className="focus:border-primary focus:ring-primary resize-none"
                       />
                     </div>
                   </TabsContent>
 
                   {/* File Types */}
                   <div className="space-y-3">
-                    <Label className="text-gray-700 font-medium">File Types</Label>
+                    <Label className="text-foreground font-medium">File Types</Label>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex items-center space-x-2">
                         <Checkbox
@@ -512,9 +669,9 @@ export default function ResourceFinder() {
                           checked={fileTypes.webpages}
                           onCheckedChange={(checked) => handleFileTypesChange("webpages", checked as boolean)}
                           disabled={loading}
-                          className="data-[state=checked]:bg-[#05233d] data-[state=checked]:border-[#05233d]"
+                          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
-                        <Label htmlFor="webpages" className="text-sm text-gray-700">
+                        <Label htmlFor="webpages" className="text-sm text-foreground">
                           Webpages
                         </Label>
                       </div>
@@ -524,9 +681,9 @@ export default function ResourceFinder() {
                           checked={fileTypes.documents}
                           onCheckedChange={(checked) => handleFileTypesChange("documents", checked as boolean)}
                           disabled={loading}
-                          className="data-[state=checked]:bg-[#05233d] data-[state=checked]:border-[#05233d]"
+                          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
-                        <Label htmlFor="documents" className="text-sm text-gray-700">
+                        <Label htmlFor="documents" className="text-sm text-foreground">
                           Documents
                         </Label>
                       </div>
@@ -536,9 +693,9 @@ export default function ResourceFinder() {
                           checked={fileTypes.images}
                           onCheckedChange={(checked) => handleFileTypesChange("images", checked as boolean)}
                           disabled={loading}
-                          className="data-[state=checked]:bg-[#05233d] data-[state=checked]:border-[#05233d]"
+                          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
-                        <Label htmlFor="images" className="text-sm text-gray-700">
+                        <Label htmlFor="images" className="text-sm text-foreground">
                           Images
                         </Label>
                       </div>
@@ -548,9 +705,9 @@ export default function ResourceFinder() {
                           checked={fileTypes.videos}
                           onCheckedChange={(checked) => handleFileTypesChange("videos", checked as boolean)}
                           disabled={loading}
-                          className="data-[state=checked]:bg-[#05233d] data-[state=checked]:border-[#05233d]"
+                          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                         />
-                        <Label htmlFor="videos" className="text-sm text-gray-700">
+                        <Label htmlFor="videos" className="text-sm text-foreground">
                           Videos
                         </Label>
                       </div>
@@ -559,7 +716,7 @@ export default function ResourceFinder() {
 
                   <Button
                     type="submit"
-                    className="w-full bg-[#05233d] hover:bg-[#031220] text-white font-bold"
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold"
                     disabled={isSubmitDisabled}
                   >
                     {loading ? (
@@ -583,8 +740,8 @@ export default function ResourceFinder() {
           </Card>
 
           {/* Output Section */}
-          <Card className="aspect-auto border-gray-200">
-            <CardHeader className="bg-[#ff7643] text-white">
+          <Card className="aspect-auto border-border">
+            <CardHeader className="bg-orange-500 text-white">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-2">
                   <BookOpen className="h-5 w-5" />
@@ -596,7 +753,7 @@ export default function ResourceFinder() {
                     disabled={isDownloading}
                     size="sm"
                     variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-[#ff7643] bg-transparent"
+                    className="border-white text-white hover:bg-white hover:text-orange-500 bg-transparent"
                   >
                     {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                   </Button>
@@ -607,14 +764,14 @@ export default function ResourceFinder() {
               <div className="max-h-[600px] overflow-y-auto">
                 {loading && !results && (
                   <div className="text-center py-10">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff7643] mx-auto mb-4"></div>
-                    <p className="text-gray-500">Searching for educational resources...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Searching for educational resources...</p>
                   </div>
                 )}
 
                 {results && resultTopics.length > 0 ? (
                   <div className="space-y-4">
-                    <div className="text-sm text-gray-600 mb-4">
+                    <div className="text-sm text-foreground mb-4">
                       Found {totalFileCount} resources across {resultTopics.length} topic
                       {resultTopics.length !== 1 ? "s" : ""}
                     </div>
@@ -632,7 +789,7 @@ export default function ResourceFinder() {
                   !error && (
                     <div className="text-center py-10">
                       <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p className="text-gray-500">
+                      <p className="text-muted-foreground">
                         Add inputs and click 'Find Resources' to discover educational materials.
                       </p>
                     </div>
@@ -644,16 +801,24 @@ export default function ResourceFinder() {
         </div>
 
         {/* Additional content area */}
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-gray-50 md:min-h-min p-4">
-          <div className="text-center text-gray-500 py-8">
-            <h3 className="text-lg font-semibold mb-2 text-[#05233d]">Welcome to ResourceFinder</h3>
+        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min p-4">
+          <div className="text-center text-muted-foreground py-8">
+            <h3 className="text-lg font-semibold mb-2 text-primary">Welcome to Workbox</h3>
             <p className="text-sm">
               Use the search form above to find educational resources, or browse your search history in the sidebar.
             </p>
             {autoSaveEnabled && (
-              <p className="text-xs mt-2 text-[#ff7643]">
+              <p className="text-xs mt-2 text-orange-500">
                 ✓ Auto-save is enabled - your searches will be automatically saved to history
               </p>
+            )}
+            {selectedHistoryRecord && (
+              <div className="text-xs mt-2 text-foreground">
+                <p>
+                  Loaded from history: <span className="font-semibold">{selectedHistoryRecord.name}</span>
+                </p>
+                <p className="italic">Modify parameters and click 'Find Resources' again to search.</p>
+              </div>
             )}
           </div>
         </div>
@@ -663,7 +828,8 @@ export default function ResourceFinder() {
 
   return (
     <SidebarProvider>
-      <AppSidebar onNavigate={setCurrentPage} currentPage={currentPage} />
+      {/* Pass the loadHistoryRecord function to AppSidebar */}
+      <AppSidebar onNavigate={setCurrentPage} currentPage={currentPage} onSelectHistoryRecord={loadHistoryRecord} />
       <SidebarInset>
         {/* Header with breadcrumb */}
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -674,8 +840,8 @@ export default function ResourceFinder() {
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbLink href="#" className="flex items-center">
-                    <img src="/favicon.svg" alt="ResourceFinder" className="w-4 h-4 mr-2" />
-                    ResourceFinder
+                    <img src="/favicon.svg" alt="Workbox" className="w-4 h-4 mr-2" />
+                    Workbox
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />

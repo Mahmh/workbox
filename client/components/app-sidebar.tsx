@@ -1,3 +1,4 @@
+// app-sidebar.tsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -51,21 +52,40 @@ import {
   History,
 } from "lucide-react"
 
+// Define interfaces for structured input data and API response (copied from resource-finder.tsx for consistency)
+interface StructuredInput {
+  curriculum: string
+  grade: number // Grade from DB is number
+  subject: string
+  topics: string[]
+}
+
+interface FileResult {
+  filename: string
+  link: string
+  type: string // Added type based on output schema
+}
+
+interface ApiResponse {
+  [folderName: string]: FileResult[]
+}
+
 interface HistoryRecord {
   id: string
   name: string
   created_at: string
   input_type: "form" | "freeform"
-  input: any
-  output: any
+  input: StructuredInput | string // More specific type
+  output: ApiResponse // More specific type
 }
 
 interface AppSidebarProps {
   onNavigate?: (page: string) => void
   currentPage?: string
+  onSelectHistoryRecord?: (record: HistoryRecord) => void // New prop
 }
 
-export function AppSidebar({ onNavigate, currentPage = "finder" }: AppSidebarProps) {
+export function AppSidebar({ onNavigate, currentPage = "finder", onSelectHistoryRecord }: AppSidebarProps) {
   const { user, logout, getAccessToken } = useAuth()
   const [history, setHistory] = useState<HistoryRecord[]>([])
   const [loading, setLoading] = useState(true)
@@ -245,7 +265,7 @@ export function AppSidebar({ onNavigate, currentPage = "finder" }: AppSidebarPro
           <SidebarGroupLabel className="flex items-center justify-between">
             <span>Search History</span>
             <Badge variant="secondary" className="text-xs bg-[#ff7643] text-white">
-              {history.length}
+              {filteredHistory.length}
             </Badge>
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -270,7 +290,7 @@ export function AppSidebar({ onNavigate, currentPage = "finder" }: AppSidebarPro
               ) : filteredHistory.length > 0 ? (
                 filteredHistory.slice(0, 10).map((record) => (
                   <SidebarMenuItem key={record.id}>
-                    <SidebarMenuButton className="group" tooltip={record.name}>
+                    <SidebarMenuButton className="group" tooltip={record.name} onClick={() => onSelectHistoryRecord?.(record)}>
                       <div className="flex items-center space-x-2 flex-1 min-w-0">
                         <FileText className="h-3 w-3 text-[#ff7643] flex-shrink-0" />
                         <div className="flex-1 min-w-0">

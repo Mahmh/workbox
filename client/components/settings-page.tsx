@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useAuth } from "./Auth/AuthContext"
+import { useTheme } from "./theme-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,10 +21,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { User, Settings, Shield, Trash2, Save, Loader2, Eye, EyeOff } from "lucide-react"
+import { User, Settings, Shield, Trash2, Save, Loader2, Eye, EyeOff, Moon, Sun } from "lucide-react"
 
 export default function SettingsPage() {
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
@@ -39,7 +41,6 @@ export default function SettingsPage() {
   // Preferences
   const [autoSave, setAutoSave] = useState(true)
   const [emailNotifications, setEmailNotifications] = useState(true)
-  const [darkMode, setDarkMode] = useState(false)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   const handleUpdateProfile = async () => {
@@ -105,13 +106,23 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex items-center space-x-2 mb-6">
-        <Settings className="h-6 w-6 text-[#05233d]" />
-        <h1 className="text-2xl font-bold text-[#05233d]">Settings</h1>
+        <Settings className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold text-primary">Settings</h1>
       </div>
 
       {message && (
-        <Alert className={message.type === "success" ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}>
-          <AlertDescription className={message.type === "success" ? "text-green-800" : "text-red-800"}>
+        <Alert
+          className={
+            message.type === "success"
+              ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
+              : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950"
+          }
+        >
+          <AlertDescription
+            className={
+              message.type === "success" ? "text-green-800 dark:text-green-200" : "text-red-800 dark:text-red-200"
+            }
+          >
             {message.text}
           </AlertDescription>
         </Alert>
@@ -120,7 +131,7 @@ export default function SettingsPage() {
       {/* Profile Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-[#05233d]">
+          <CardTitle className="flex items-center space-x-2 text-primary">
             <User className="h-5 w-5" />
             <span>Profile Settings</span>
           </CardTitle>
@@ -133,14 +144,14 @@ export default function SettingsPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="focus:border-[#05233d] focus:ring-[#05233d]"
+              className="focus:border-primary focus:ring-primary"
             />
           </div>
 
           <Button
             onClick={handleUpdateProfile}
             disabled={loading}
-            className="bg-[#05233d] hover:bg-[#031220] text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
             Update Profile
@@ -151,7 +162,7 @@ export default function SettingsPage() {
       {/* Security Settings */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-[#05233d]">
+          <CardTitle className="flex items-center space-x-2 text-primary">
             <Shield className="h-5 w-5" />
             <span>Security</span>
           </CardTitle>
@@ -165,7 +176,7 @@ export default function SettingsPage() {
                 type={showCurrentPassword ? "text" : "password"}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="focus:border-[#05233d] focus:ring-[#05233d] pr-10"
+                className="focus:border-primary focus:ring-primary pr-10"
               />
               <Button
                 type="button"
@@ -187,7 +198,7 @@ export default function SettingsPage() {
                 type={showNewPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="focus:border-[#05233d] focus:ring-[#05233d] pr-10"
+                className="focus:border-primary focus:ring-primary pr-10"
               />
               <Button
                 type="button"
@@ -209,7 +220,7 @@ export default function SettingsPage() {
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="focus:border-[#05233d] focus:ring-[#05233d] pr-10"
+                className="focus:border-primary focus:ring-primary pr-10"
               />
               <Button
                 type="button"
@@ -226,7 +237,7 @@ export default function SettingsPage() {
           <Button
             onClick={handleChangePassword}
             disabled={loading || !currentPassword || !newPassword || !confirmPassword}
-            className="bg-[#05233d] hover:bg-[#031220] text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shield className="h-4 w-4 mr-2" />}
             Change Password
@@ -237,7 +248,7 @@ export default function SettingsPage() {
       {/* Preferences */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-[#05233d]">
+          <CardTitle className="flex items-center space-x-2 text-primary">
             <Settings className="h-5 w-5" />
             <span>Preferences</span>
           </CardTitle>
@@ -246,7 +257,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Auto-save searches</Label>
-              <p className="text-sm text-gray-500">Automatically save your searches to history</p>
+              <p className="text-sm text-muted-foreground">Automatically save your searches to history</p>
             </div>
             <Switch checked={autoSave} onCheckedChange={setAutoSave} />
           </div>
@@ -256,7 +267,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Email notifications</Label>
-              <p className="text-sm text-gray-500">Receive updates and notifications via email</p>
+              <p className="text-sm text-muted-foreground">Receive updates and notifications via email</p>
             </div>
             <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
           </div>
@@ -265,10 +276,13 @@ export default function SettingsPage() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label>Dark mode</Label>
-              <p className="text-sm text-gray-500">Use dark theme for the interface</p>
+              <Label className="flex items-center space-x-2">
+                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                <span>Dark mode</span>
+              </Label>
+              <p className="text-sm text-muted-foreground">Use dark theme for the interface</p>
             </div>
-            <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+            <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
           </div>
 
           <Separator />
@@ -276,7 +290,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Collapse sidebar by default</Label>
-              <p className="text-sm text-gray-500">Start with sidebar collapsed</p>
+              <p className="text-sm text-muted-foreground">Start with sidebar collapsed</p>
             </div>
             <Switch checked={sidebarCollapsed} onCheckedChange={setSidebarCollapsed} />
           </div>
@@ -284,9 +298,9 @@ export default function SettingsPage() {
       </Card>
 
       {/* Danger Zone */}
-      <Card className="border-red-200">
+      <Card className="border-destructive/50">
         <CardHeader>
-          <CardTitle className="flex items-center space-x-2 text-red-600">
+          <CardTitle className="flex items-center space-x-2 text-destructive">
             <Trash2 className="h-5 w-5" />
             <span>Danger Zone</span>
           </CardTitle>
@@ -294,8 +308,8 @@ export default function SettingsPage() {
         <CardContent>
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-medium text-red-600">Delete Account</h3>
-              <p className="text-sm text-gray-500 mb-4">
+              <h3 className="text-lg font-medium text-destructive">Delete Account</h3>
+              <p className="text-sm text-muted-foreground mb-4">
                 Once you delete your account, there is no going back. Please be certain.
               </p>
               <AlertDialog>
@@ -315,7 +329,7 @@ export default function SettingsPage() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">
+                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90">
                       Delete Account
                     </AlertDialogAction>
                   </AlertDialogFooter>

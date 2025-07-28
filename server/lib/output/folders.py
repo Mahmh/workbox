@@ -19,7 +19,7 @@ def transform_folders(
         folders = _limit_num_files(folders, max_files_per_folder)
         folders = _filter_irrelevant(folders, threshold)
         folders = _truncate_filenames(folders, max_filename_length)
-        folders = _validate_files(folders)
+      
     except Exception as e:
         errlog("transform_folders", e, "folders")
     return folders
