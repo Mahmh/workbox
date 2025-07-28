@@ -241,7 +241,7 @@ export default function ResourceFinder() {
       return (
         <div className="flex flex-col gap-4">
           <textarea
-            className="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-150 ease-in-out resize-none"
+            className="w-full p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#04182bff] transition duration-150 ease-in-out resize-none"
             placeholder="Enter free text prompt (e.g., 'Revision notes for high school biology')"
             rows={6}
             value={freeformInput}
@@ -268,7 +268,7 @@ export default function ResourceFinder() {
                 value={curriculum}
                 onChange={(e) => setCurriculum(e.target.value)}
                 required
-                className="w-full p-3 pl-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150"
+                className="w-full p-3 pl-10 border border-gray-300 rounded-md focus:ring-[1.3px] focus:ring-[#04182bff] focus:border-[#04182bff] transition duration-150 outline-none"
                 placeholder="e.g., Common Core, IB, Cambridge"
                 disabled={loading}
               />
@@ -288,7 +288,7 @@ export default function ResourceFinder() {
                 value={grade}
                 onChange={(e) => setGrade(e.target.value)}
                 required
-                className="w-full p-3 pl-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150"
+                className="w-full p-3 pl-10 border border-gray-300 rounded-md focus:ring-[1.3px] focus:ring-[#04182bff] focus:border-[#04182bff] transition duration-150 outline-none"
                 placeholder="e.g., 9"
                 disabled={loading}
               />
@@ -308,7 +308,7 @@ export default function ResourceFinder() {
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 required
-                className="w-full p-3 pl-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150"
+                className="w-full p-3 pl-10 border border-gray-300 rounded-md focus:ring-[1.3px] focus:ring-[#04182bff] focus:border-[#04182bff] transition duration-150 outline-none"
                 placeholder="e.g., Mathematics, Science, English"
                 disabled={loading}
               />
@@ -328,14 +328,14 @@ export default function ResourceFinder() {
                 value={currentTopic}
                 onChange={(e) => setCurrentTopic(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="w-full p-3 pl-10 pr-12 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 transition duration-150"
+                className="w-full p-3 pl-10 pr-12 border border-gray-300 rounded-md focus:ring-[1.3px] focus:ring-[#04182bff] focus:border-[#04182bff] transition duration-150 outline-none"
                 placeholder="e.g., Algebra, Geometry, Fractions"
                 disabled={loading}
               />
               <button
                 type="button"
                 onClick={addTopic}
-                className="absolute right-2 p-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition duration-150"
+                className="absolute right-2 p-2 bg-[#04182bff] text-white rounded-md hover:bg-[#05233d] transition duration-150"
                 aria-label="Add Topic"
                 disabled={loading}
               >
@@ -352,13 +352,13 @@ export default function ResourceFinder() {
                 {topics.map((topic, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-[#04182bff] text-[#ffffffff]"
                   >
                     {topic}
                     <button
                       type="button"
                       onClick={() => removeTopic(topic)}
-                      className="ml-2 text-green-600 hover:text-green-800"
+                      className="ml-2 text-[#fff] hover:text-[#cfcfcfc6]"
                     >
                       <XMarkIcon className="h-4 w-4" />
                     </button>
@@ -378,7 +378,7 @@ export default function ResourceFinder() {
 
         {/* Input Section */}
         <div className="w-full lg:w-1/2 border-r border-gray-300">
-          <div className="bg-[#4CAF50] text-white p-4 font-bold text-xl">Input</div>
+          <div className="bg-[#05233d] text-white p-4 font-bold text-xl">Input</div>
 
           {/* Tab Navigation */}
           <div className="flex border-b border-gray-200">
@@ -386,7 +386,7 @@ export default function ResourceFinder() {
               onClick={() => switchMode('structured')}
               className={`px-8 py-3 text-lg font-semibold transition-colors duration-200 focus:outline-none
                           ${!isFreeform
-                  ? 'border-b-4 border-green-600 text-green-700 bg-gray-50'
+                  ? 'border-b-4 border-[#05233d] text-[#05233d] bg-gray-50'
                   : 'text-gray-500 hover:text-gray-700'}`
               }
             >
@@ -396,7 +396,7 @@ export default function ResourceFinder() {
               onClick={() => switchMode('freeform')}
               className={`px-8 py-3 text-lg font-semibold transition-colors duration-200 focus:outline-none
                           ${isFreeform
-                  ? 'border-b-4 border-green-600 text-green-700 bg-gray-50'
+                  ? 'border-b-4 border-[#05233d] text-[#05233d] bg-gray-50'
                   : 'text-gray-500 hover:text-gray-700'}`
               }
             >
@@ -418,7 +418,7 @@ export default function ResourceFinder() {
                     name="webpage"
                     checked={fileTypes.webpages}
                     onChange={handleFileTypesChange}
-                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="h-4 w-4 text-[#05233d] border-gray-300 rounded focus:ring-[#04182bff]"
                     disabled={loading}
                   />
                   <label htmlFor="webpage-checkbox" className="ml-2 text-sm text-gray-700">
@@ -432,7 +432,7 @@ export default function ResourceFinder() {
                     name="document"
                     checked={fileTypes.documents}
                     onChange={handleFileTypesChange}
-                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="h-4 w-4 text-[#05233d] border-gray-300 rounded focus:ring-[#04182bff]"
                     disabled={loading}
                   />
                   <label htmlFor="document-checkbox" className="ml-2 text-sm text-gray-700">
@@ -446,7 +446,7 @@ export default function ResourceFinder() {
                     name="images"
                     checked={fileTypes.images}
                     onChange={handleFileTypesChange}
-                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="h-4 w-4 text-[#05233d] border-gray-300 rounded focus:ring-[#04182bff]"
                     disabled={loading}
                   />
                   <label htmlFor="images-checkbox" className="ml-2 text-sm text-gray-700">
@@ -460,7 +460,7 @@ export default function ResourceFinder() {
                     name="videos"
                     checked={fileTypes.videos}
                     onChange={handleFileTypesChange}
-                    className="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    className="h-4 w-4 text-[#05233d] border-gray-300 rounded focus:ring-[#04182bff]"
                     disabled={loading}
                   />
                   <label htmlFor="videos-checkbox" className="ml-2 text-sm text-gray-700">
@@ -477,7 +477,7 @@ export default function ResourceFinder() {
               className={`w-full py-3 rounded-md font-bold transition duration-150 ${
                 isSubmitDisabled
                   ? "bg-gray-400 cursor-not-allowed text-gray-600"
-                  : "bg-[#4CAF50] text-white hover:bg-green-600"
+                  : "bg-[#05233d] text-white hover:bg-[#031220ff]"
                 }`}
             >
               {loading ? "Processing..." : "Find Resources"}
@@ -489,13 +489,13 @@ export default function ResourceFinder() {
 
         {/* Output Section */}
         <div className="w-full lg:w-1/2 relative">
-          <div className="bg-[#00897B] text-white p-4 font-bold text-xl flex items-center justify-between">
+          <div className="bg-[#ff7643] text-white p-4 font-bold text-xl flex items-center justify-between">
             Output
           </div>
           <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
             {loading && !results && (
               <div className="text-gray-500 italic text-center py-10">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#ff7643] mx-auto mb-4"></div>
                 Searching for educational resources...
               </div>
             )}
