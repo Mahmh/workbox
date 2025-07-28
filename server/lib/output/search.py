@@ -78,8 +78,9 @@ def _search_text(query: str, file_types: CustomFileTypes) -> list[File]:
         if exts and not any(matches_type(url, ext) for ext in exts):
             return None
 
+        title = hit.get("title", "")
         file_type = "webpage" if matches_type(url, "html") else "document"
-        return File(filename=hit["title"], link=url, type=file_type)
+        return File(filename=title, link=url, type=file_type)
 
     with ThreadPoolExecutor() as executor:
         for file in executor.map(_process_hit, hits):
