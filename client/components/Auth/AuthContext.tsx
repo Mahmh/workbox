@@ -12,7 +12,7 @@ import React, {
 import { createClient, Session, User } from "@supabase/supabase-js"
 
 // Define the shape of the authentication context
-interface AuthContextType {
+interface AuthContextType { 
   user: User | null
   session: Session | null
   loading: boolean
