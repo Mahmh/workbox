@@ -10,6 +10,7 @@ import {
   ListBulletIcon,
   XMarkIcon,
   PlusIcon,
+  ArrowDownTrayIcon
 } from "@heroicons/react/24/solid"
 
 // Define interfaces for structured input data and API response
@@ -111,6 +112,7 @@ export default function ResourceFinder() {
   const [results, setResults] = useState<ApiResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isDownloading, setIsDownloading] = useState(false)
 
   // --- Utility functions for structured form topic management ---
 
@@ -156,6 +158,41 @@ export default function ResourceFinder() {
     setTopics([])
     setCurrentTopic('')
   }
+
+  const downloadResults = () => {
+    if (!results) return;
+    setIsDownloading(true);
+    const downloadUrl = 'http://localhost:8000/output/download';
+
+    fetch(downloadUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(results),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.blob();
+      })
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'resources.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        setIsDownloading(false);
+      })
+      .catch((error) => {
+        console.error('Error downloading the file:', error);
+        setError('Failed to download the file. Please try again.');
+      });
+  };
 
   // --- Form Submission Handler ---
   const handleSubmit = async (e: FormEvent) => {
@@ -378,7 +415,7 @@ export default function ResourceFinder() {
 
         {/* Input Section */}
         <div className="w-full lg:w-1/2 border-r border-gray-300">
-          <div className="bg-[#05233d] text-white p-4 font-bold text-xl">Input</div>
+          <div className="bg-[#05233d] text-white p-4 font-bold text-xl h-[4rem]">Input</div>
 
           {/* Tab Navigation */}
           <div className="flex border-b border-gray-200">
@@ -489,8 +526,41 @@ export default function ResourceFinder() {
 
         {/* Output Section */}
         <div className="w-full lg:w-1/2 relative">
-          <div className="bg-[#ff7643] text-white p-4 font-bold text-xl flex items-center justify-between">
+          <div className="bg-[#ff7643] text-white p-4 font-bold text-xl flex items-center justify-between h-[4rem]">
             Output
+            {results &&
+              <button
+                onClick={downloadResults}
+                className="p-2 border-2 border-white rounded-[7px] transition-colors duration-200 hover:bg-white group"
+                disabled={isDownloading}
+              >
+                {isDownloading ? (
+                  <svg
+                    className="h-6 w-6 animate-spin text-white group-hover:text-[#ff7643] transition-colors"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    />
+                  </svg>
+                ) : (
+                  <ArrowDownTrayIcon className="h-6 w-6 text-white group-hover:text-[#ff7643] transition-colors" />
+                )}
+              </button>
+
+            }
           </div>
           <div className="p-6 space-y-4 max-h-[600px] overflow-y-auto">
             {loading && !results && (

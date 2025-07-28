@@ -20,36 +20,23 @@ const AppContent: React.FC = () => {
     )
   }
 
-  // return (
-  //   <>
-  //     {user ? (
-  //       <div className="relative">
-  //         {/* Logout Button */}
-  //         <button
-  //           onClick={logout}
-  //           className="absolute top-4 right-4 z-10 flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-md font-semibold hover:bg-red-600 transition duration-150 shadow-md"
-  //         >
-  //           <ArrowLeftOnRectangleIcon className="h-5 w-5" /> Logout
-  //         </button>
-  //         <ResourceFinder />
-  //       </div>
-  //     ) : (
-  //       <Auth />
-  //     )}
-  //   </>
-  // )
-
   return (
-    <div className="relative">
-        {/* Logout Button */}
-        <button
-          onClick={logout}
-          className="absolute top-4 right-4 z-10 flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-md font-semibold hover:bg-red-600 transition duration-150 shadow-md"
-        >
-          <ArrowLeftOnRectangleIcon className="h-5 w-5" /> Logout
-        </button>
-        <ResourceFinder />
-      </div>
+    <>
+      {user ? (
+        <div className="relative">
+          {/* Logout Button */}
+          <button
+            onClick={logout}
+            className="absolute top-4 right-4 z-10 flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-md font-semibold hover:bg-red-600 transition duration-150 shadow-md"
+          >
+            <ArrowLeftOnRectangleIcon className="h-5 w-5" /> Logout
+          </button>
+          <ResourceFinder />
+        </div>
+      ) : (
+        <Auth />
+      )}
+    </>
   )
 }
 
