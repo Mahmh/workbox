@@ -11,7 +11,8 @@ def make_zip_file(folders: Folders) -> ZipFile:
 
     for folder_name, files in folders.items():
         for file in files:
-            if _get_file_extension(file):
+            ext = _get_file_extension(file)
+            if ext and ext.lower() not in {".html", ".htm", ".php", ".asp", ".aspx"}:
                 # real file: stream it in chunks
                 try:
                     r = requests.get(file.link, stream=True)
