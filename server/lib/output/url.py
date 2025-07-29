@@ -5,12 +5,6 @@ from lib.constants import URL_CHECK_TIMEOUT, DOCUMENT_EXT_TO_MIME
 import requests
 
 
-def check_url(url: str) -> bool:
-    """Returns True if `url` responds with a status code <400 (i.e. not 404/500/etc)."""
-    r = get_response_from_url(url)
-    return r.status_code < 400 if r is not None else False
-
-
 def get_response_from_url(url: str) -> Optional[requests.Response]:
     """Used to verify if a URL is reachable."""
     try:

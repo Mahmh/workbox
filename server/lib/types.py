@@ -1,6 +1,6 @@
 from typing import Optional, TypeAlias, Literal
 from typing_extensions import TypedDict
-from lib.datamodels import File, StructuredForm
+from lib.datamodels import File, StructuredForm, CustomFileTypes
 
 Folders: TypeAlias = dict[str, list[File]]
 InputType: TypeAlias = Literal["form", "freeform"]
@@ -11,10 +11,11 @@ class HistoryRecordDict(TypedDict):
     id: Optional[str] = None
     user_id: str
     name: str
+    created_at: str
     input_type: InputType
     input: InputDataType
     output: Folders
-    created_at: str
+    file_types: CustomFileTypes
 
     def validate_input(d: "HistoryRecordDict") -> None:
         if d["input_type"] == "form" and not isinstance(d["input"], StructuredForm):

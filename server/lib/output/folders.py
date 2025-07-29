@@ -1,9 +1,7 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from lib.types import Folders
 from lib.datamodels import File
 from lib.logger import errlog
 from lib.constants import RELEVANCE_MODEL
-from lib.output.url import check_url
 import random, numpy as np
 
 
@@ -19,7 +17,6 @@ def transform_folders(
         folders = _limit_num_files(folders, max_files_per_folder)
         folders = _filter_irrelevant(folders, threshold)
         folders = _truncate_filenames(folders, max_filename_length)
-      
     except Exception as e:
         errlog("transform_folders", e, "folders")
     return folders
@@ -94,32 +91,3 @@ def _truncate_filenames(folders: Folders, max_length: int) -> Folders:
             if len(file.filename) > max_length:
                 file.filename = file.filename[:max_length] + "..."
     return folders
-
-
-def _validate_files(folders: Folders) -> Folders:
-    """
-    Validates all URLs in the folders concurrently and removes those that are not reachable.
-    Returns a new Folders dict with only valid URLs.
-    """
-    valid_folders = {}
-
-    for folder_name, files in folders.items():
-        valid_files: list[File] = []
-
-        # Submit all URL checks to a thread pool
-        with ThreadPoolExecutor() as executor:
-            future_to_file = {
-                executor.submit(check_url, file.link): file for file in files
-            }
-
-            for future in as_completed(future_to_file):
-                file = future_to_file[future]
-                try:
-                    if future.result():
-                        valid_files.append(file)
-                except Exception as e:
-                    errlog("_validate_files", e, f"checking {file.link}")
-
-        valid_folders[folder_name] = valid_files
-
-    return valid_folders

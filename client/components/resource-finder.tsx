@@ -60,6 +60,7 @@ interface HistoryRecord {
   input_type: "form" | "freeform"
   input: StructuredInput | string // More specific type
   output: ApiResponse // More specific type
+  file_types: FileTypes
 }
 
 // TopicResultItem component
@@ -190,6 +191,7 @@ export default function ResourceFinder() {
             input: freeformInput, // Just the string for freeform
             output: {},
             created_at: new Date().toISOString(),
+            file_types: fileTypes
           }
         } else {
           historyRecord = {
@@ -205,6 +207,7 @@ export default function ResourceFinder() {
             },
             output: {},
             created_at: new Date().toISOString(),
+            file_types: fileTypes
           }
         }
 
@@ -283,6 +286,12 @@ export default function ResourceFinder() {
     setSubject("")
     setTopics([])
     setCurrentTopic("")
+    setFileTypes({
+      webpages: true,
+      documents: true,
+      images: false,
+      videos: false,
+    })
     setSelectedHistoryRecord(null) // Clear selected history record on tab change
   }
 
@@ -400,12 +409,7 @@ export default function ResourceFinder() {
     }
 
     // Reset file types to default when loading from history
-    setFileTypes({
-      webpages: true,
-      documents: true,
-      images: false,
-      videos: false,
-    })
+    setFileTypes(record.file_types)
     console.log("Resetting file types to default.")
   }, [])
 
