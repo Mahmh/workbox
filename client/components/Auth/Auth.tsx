@@ -78,8 +78,8 @@ const Auth: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <img src="/favicon.svg" alt="ResourceFinder" className="w-8 h-8" />
-              <span className="text-xl font-bold text-foreground">ResourceFinder</span>
+              <img src="/favicon.svg" alt="Workbox" className="w-8 h-8" />
+              <span className="text-xl font-bold text-foreground">Workbox</span>
             </div>
             <Button variant="ghost" size="sm" onClick={toggleTheme} className="text-foreground hover:bg-accent">
               {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -93,7 +93,7 @@ const Auth: React.FC = () => {
         <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
           <div className="max-w-md">
             <div className="text-center mb-8">
-              <img src="/favicon.svg" alt="ResourceFinder" className="w-16 h-16 mx-auto mb-4" />
+              <img src="/favicon.svg" alt="Workbox" className="w-16 h-16 mx-auto mb-4" />
               <h1 className="text-3xl font-bold text-foreground mb-2">Discover Educational Resources</h1>
               <p className="text-muted-foreground">
                 Powered by AI to find the perfect learning materials for your needs
@@ -121,7 +121,7 @@ const Auth: React.FC = () => {
           <div className="w-full max-w-md">
             <Card className="shadow-xl border bg-card/80 backdrop-blur-sm">
               <CardHeader className="space-y-1 text-center pb-6">
-                <img src="/favicon.svg" alt="ResourceFinder" className="w-12 h-12 mx-auto mb-4 lg:hidden" />
+                <img src="/favicon.svg" alt="Workbox" className="w-12 h-12 mx-auto mb-4 lg:hidden" />
                 <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Welcome Back
                 </CardTitle>

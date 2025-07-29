@@ -126,7 +126,7 @@ export default function ResourceFinder() {
 
   // State for free form input
   const [freeformInput, setFreeformInput] = useState("")
-  const [activeTab, setActiveTab] = useState("structured")
+  const [activeTab, setActiveTab] = useState<HistoryRecord["input_type"]>("form")
 
   // State for file type checkboxes
   const [fileTypes, setFileTypes] = useState<FileTypes>({
@@ -157,7 +157,7 @@ export default function ResourceFinder() {
     setResults(null)
     setError(null)
     setSelectedHistoryRecord(null)
-    setActiveTab("structured") // Reset to structured tab by default
+    setActiveTab("form") // Reset to structured tab by default
     setFileTypes({
       // Reset file types to default
       webpages: true,
@@ -272,7 +272,7 @@ export default function ResourceFinder() {
   }
 
   // Tab switching and input clearing
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (tab: HistoryRecord["input_type"]) => {
     setActiveTab(tab)
     setResults(null)
     setError(null)
@@ -335,20 +335,7 @@ export default function ResourceFinder() {
       // For structured form, the input should be an object like:
       // {"grade": 11, "topics": ["vectors"], "subject": "Mathematics", "curriculum": "edexcel igcse maths"}
 
-      let input: any
-
-      // Handle case where input might be a string that needs parsing
-      if (typeof record.input === "string") {
-        try {
-          input = JSON.parse(record.input)
-        } catch (e) {
-          console.error("Failed to parse structured input:", e)
-          input = {}
-        }
-      } else {
-        input = record.input
-      }
-
+      let input = record.input as StructuredInput
       console.log("Parsed structured input:", input)
 
       // Set curriculum
@@ -369,14 +356,8 @@ export default function ResourceFinder() {
         console.log("Setting subject to:", input.subject)
       }
 
-      // Set topics - ensure it's an array
-      if (Array.isArray(input.topics)) {
-        setTopics(input.topics)
-        console.log("Setting topics to:", input.topics)
-      } else {
-        setTopics([])
-        console.log("No valid topics found, setting empty array")
-      }
+      setTopics(input.topics)
+      console.log("Setting topics to:", input.topics)
 
       // Clear freeform input
       setFreeformInput("")
@@ -534,7 +515,7 @@ export default function ResourceFinder() {
               <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger
-                    value="structured"
+                    value="form"
                     className="data-[state=active]:bg-primary data-[state=active]:text-white"
                   >
                     Structured Form
@@ -548,7 +529,7 @@ export default function ResourceFinder() {
                 </TabsList>
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-                  <TabsContent value="structured" className="space-y-4">
+                  <TabsContent value="form" className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="curriculum" className="text-foreground font-medium">
                         Curriculum

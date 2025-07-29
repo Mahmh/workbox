@@ -218,10 +218,10 @@ export function AppSidebar({ onNavigate, currentPage = "finder", onSelectHistory
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#05233d] text-white">
-                  <img src="/favicon.svg" alt="ResourceFinder" className="size-4" />
+                  <img src="/favicon.svg" alt="Workbox" className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">ResourceFinder</span>
+                  <span className="truncate font-semibold">Workbox</span>
                   <span className="truncate text-xs">Educational Resources</span>
                 </div>
               </a>
