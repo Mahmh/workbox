@@ -26,6 +26,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Folder, ChevronDown, GraduationCap, BookOpen, X, Plus, Download, Loader2, RefreshCw } from "lucide-react"
+import { BACKEND_API_URL } from "./constants"
 
 // Update the StructuredInput interface to match the backend schema
 interface StructuredInput {
@@ -222,7 +223,7 @@ export default function ResourceFinder() {
 
         console.log("Saving to history:", JSON.stringify(historyRecord, null, 2))
 
-        const response = await fetch("http://localhost:8000/history", {
+        const response = await fetch(`${BACKEND_API_URL}/history`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -300,7 +301,7 @@ export default function ResourceFinder() {
     setIsDownloading(true)
 
     try {
-      const response = await fetch("http://localhost:8000/output/download", {
+      const response = await fetch(`${BACKEND_API_URL}/output/download`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -420,18 +421,17 @@ export default function ResourceFinder() {
     setError(null)
     setResults(null)
 
-    const API_BASE_URL = "http://localhost:8000"
     let endpoint = ""
     let payload: any = null
 
     if (activeTab === "freeform") {
-      endpoint = `${API_BASE_URL}/input/freeform`
+      endpoint = `${BACKEND_API_URL}/input/freeform`
       payload = {
         user_input: freeformInput,
         file_types: fileTypes,
       }
     } else {
-      endpoint = `${API_BASE_URL}/input/form`
+      endpoint = `${BACKEND_API_URL}/input/form`
       payload = {
         user_input: {
           curriculum,

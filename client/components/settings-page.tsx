@@ -22,6 +22,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { User, Settings, Shield, Trash2, Save, Loader2, Eye, EyeOff, Moon, Sun } from "lucide-react"
+import { BACKEND_API_URL } from "./constants"
 
 export default function SettingsPage() {
   const { user, logout } = useAuth()
@@ -86,7 +87,7 @@ export default function SettingsPage() {
 
   const handleDeleteAccount = async () => {
     try {
-      const response = await fetch("http://localhost:8000/auth", {
+      const response = await fetch(`${BACKEND_API_URL}/auth`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${user?.access_token || ""}`,

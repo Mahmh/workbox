@@ -3,6 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect, type ReactNode, useCallback } from "react"
 import { createClient, type Session, type User } from "@supabase/supabase-js"
+import { SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY, BACKEND_API_URL } from "../constants"
 
 interface AuthContextType {
   user: User | null
@@ -16,11 +17,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const SUPABASE_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_URL || "https://xtqazsapkzynvpsinran.supabase.co"
-const SUPABASE_ANON_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0cWF6c2Fwa3p5bnZwc2lucmFuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MjYwMTEwNywiZXhwIjoyMDY4MTc3MTA3fQ.RI3OvzvuFW2HuIYfkG2_CfGTFwCJjWh0oxAR27ZW3ug"
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || "http://localhost:8000"
 // Initialize Supabase client for session management only
 const supabase = createClient(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY)
 

@@ -51,6 +51,7 @@ import {
   Home,
   History,
 } from "lucide-react"
+import { BACKEND_API_URL } from "./constants"
 
 // Define interfaces for structured input data and API response (copied from resource-finder.tsx for consistency)
 interface StructuredInput {
@@ -100,7 +101,7 @@ export function AppSidebar({ onNavigate, currentPage = "finder", onSelectHistory
 
       try {
         const token = getAccessToken()
-        const response = await fetch(`http://localhost:8000/history`, {
+        const response = await fetch(`${BACKEND_API_URL}/history`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -129,7 +130,7 @@ export function AppSidebar({ onNavigate, currentPage = "finder", onSelectHistory
 
     try {
       const token = getAccessToken()
-      const response = await fetch(`http://localhost:8000/history`, {
+      const response = await fetch(`${BACKEND_API_URL}/history`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +160,7 @@ export function AppSidebar({ onNavigate, currentPage = "finder", onSelectHistory
 
     try {
       const token = getAccessToken()
-      const response = await fetch(`http://localhost:8000/history?history_id=${historyId}`, {
+      const response = await fetch(`${BACKEND_API_URL}/history?history_id=${historyId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -180,7 +181,7 @@ export function AppSidebar({ onNavigate, currentPage = "finder", onSelectHistory
 
     try {
       const token = getAccessToken()
-      const response = await fetch("http://localhost:8000/auth", {
+      const response = await fetch(`${BACKEND_API_URL}/auth`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -1,7 +1,7 @@
 from supabase import AsyncClient, acreate_client
 from lib.constants import (
     SUPABASE_PROJECT_URL,
-    SUPABASE_ANON_PUBLIC_KEY,
+    SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY,
 )
 
@@ -12,7 +12,7 @@ _supabase_admin: AsyncClient
 async def get_supabase() -> AsyncClient:
     global _supabase
     if "_supabase" not in globals():
-        _supabase = await acreate_client(SUPABASE_PROJECT_URL, SUPABASE_ANON_PUBLIC_KEY)
+        _supabase = await acreate_client(SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY)
     return _supabase
 
 
