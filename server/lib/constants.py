@@ -41,7 +41,7 @@ LOG_DIR = _locate("../logs/")
 os.makedirs(LOG_DIR, exist_ok=True)
 
 # Misc
-WEB_SERVER_URL = "http://localhost:3000"
+WEB_SERVER_URL = os.getenv("WEB_SERVER_URL", "http://localhost:3001")
 RELEVANCE_MODEL = SentenceTransformer("all-MiniLM-L6-v2")
 
 

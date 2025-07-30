@@ -26,6 +26,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { Folder, ChevronDown, GraduationCap, BookOpen, X, Plus, Download, Loader2, RefreshCw } from "lucide-react"
+import { v4 as uuidv4 } from 'uuid'
 import { BACKEND_API_URL } from "./constants"
 
 // Update the StructuredInput interface to match the backend schema
@@ -178,7 +179,7 @@ export default function ResourceFinder() {
         const token = getAccessToken()
 
         // Generate a proper UUID for the history record
-        const historyId = crypto.randomUUID()
+        const historyId = uuidv4()
 
         // Prepare the history record based on the exact schema
         let historyRecord: any
@@ -221,8 +222,6 @@ export default function ResourceFinder() {
           }))
         })
 
-        console.log("Saving to history:", JSON.stringify(historyRecord, null, 2))
-
         const response = await fetch(`${BACKEND_API_URL}/history`, {
           method: "POST",
           headers: {
@@ -235,8 +234,7 @@ export default function ResourceFinder() {
         if (response.ok) {
           console.log("Search auto-saved to history successfully")
         } else {
-          const errorData = await response.json()
-          console.error("Failed to auto-save to history:", response.status, errorData)
+          console.error("Failed to auto-save to history:", response.status)
         }
       } catch (error) {
         console.error("Failed to auto-save to history:", error)
@@ -332,7 +330,6 @@ export default function ResourceFinder() {
 
   // New function to load a history record into the form - FIXED VERSION
   const loadHistoryRecord = useCallback((record: HistoryRecord) => {
-    console.log("Loading history record:", record)
     setResults(null) // Clear previous results
     setError(null) // Clear any previous errors
     setSelectedHistoryRecord(record) // Store the selected record
@@ -346,47 +343,36 @@ export default function ResourceFinder() {
       // {"grade": 11, "topics": ["vectors"], "subject": "Mathematics", "curriculum": "edexcel igcse maths"}
 
       let input = record.input as StructuredInput
-      console.log("Parsed structured input:", input)
 
       // Set curriculum
       if (input.curriculum) {
         setCurriculum(input.curriculum)
-        console.log("Setting curriculum to:", input.curriculum)
       }
 
       // Set grade - convert number to string for input field
       if (input.grade !== undefined && input.grade !== null) {
         setGrade(String(input.grade))
-        console.log("Setting grade to:", String(input.grade))
       }
 
       // Set subject
       if (input.subject) {
         setSubject(input.subject)
-        console.log("Setting subject to:", input.subject)
       }
 
       setTopics(input.topics)
-      console.log("Setting topics to:", input.topics)
 
       // Clear freeform input
       setFreeformInput("")
-      console.log("Clearing freeform input.")
     } else {
-      // freeform
-      console.log("Record input type is 'freeform'. Input data:", record.input)
-
       // For freeform, input should be a string
       const freeformText = typeof record.input === "string" ? record.input : String(record.input || "")
       setFreeformInput(freeformText)
-      console.log("Setting freeform input to:", freeformText)
 
       // Clear structured inputs
       setCurriculum("")
       setGrade("")
       setSubject("")
       setTopics([])
-      console.log("Clearing structured inputs.")
     }
 
     // Load and display the historical results
@@ -403,15 +389,12 @@ export default function ResourceFinder() {
         }
       })
       setResults(transformedOutput)
-      console.log("Setting results to:", transformedOutput)
     } else {
       setResults(null)
-      console.log("No results to display.")
     }
 
     // Reset file types to default when loading from history
     setFileTypes(record.file_types)
-    console.log("Resetting file types to default.")
   }, [])
 
   // Form submission handler
