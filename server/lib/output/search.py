@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from ddgs import DDGS
 from lib.datamodels import File, CustomFileTypes
 from lib.logger import errlog
-from lib.constants import SEARCH_CONFIG, SEARCH_DELAY, DOCUMENT_EXT_TO_MIME
+from lib.constants import SEARCH_CONFIG, SEARCH_DELAY, DOCUMENT_EXTS
 from lib.output.url import matches_type
 import time
 
@@ -50,7 +50,7 @@ def _search_text(query: str, file_types: CustomFileTypes) -> list[File]:
     # build allowed extensions
     exts: list[LiteralString] = []
     if file_types.documents:
-        exts.extend(list(DOCUMENT_EXT_TO_MIME.keys()))
+        exts.extend(DOCUMENT_EXTS)
     if file_types.webpages:
         exts.append("html")
 
