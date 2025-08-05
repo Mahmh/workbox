@@ -22,7 +22,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <ThemeProvider>
-          {children}
+            {children}
           </ThemeProvider>  
         </AuthProvider>
       </body>

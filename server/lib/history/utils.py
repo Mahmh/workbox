@@ -1,5 +1,6 @@
 import json
 from typing import Any
+from lib.logger import log, errlog
 from lib.types import HistoryRecordDict
 from lib.db import get_supabase
 
@@ -79,8 +80,11 @@ async def save_record(record: HistoryRecordDict) -> HistoryRecordDict:
 
             serialized_record["created_at"] = datetime.utcnow().isoformat()
 
-        print(f"Serialized record for DB: {json.dumps(serialized_record, indent=2)}")
-
+        log(
+            f"Serialized record for DB: {json.dumps(serialized_record, indent=2)}",
+            "history",
+            "DEBUG",
+        )
         res = await client.table("history").insert(serialized_record).execute()
 
         if not res.data:
@@ -89,9 +93,7 @@ async def save_record(record: HistoryRecordDict) -> HistoryRecordDict:
         return res.data[0] if isinstance(res.data, list) else res.data
 
     except Exception as e:
-        print(f"Error in save_record: {str(e)}")
-        print(f"Record type: {type(record)}")
-        print(f"Record contents: {record}")
+        errlog("save_record", e, "history")
         raise e
 
 

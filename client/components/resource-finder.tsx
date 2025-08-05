@@ -444,15 +444,22 @@ export default function ResourceFinder() {
         const errorData = await response.text()
         throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`)
       }
+      const data: ApiResponse | { error: string } = await response.json()
 
-      const data: ApiResponse = await response.json()
+      if ('error' in data) {
+        if (typeof data.error === 'string' && data.error.includes("model is overloaded")) {
+          setError(data.error)
+        } else {
+          setError(`There has been an error from our server. Please try again later or contact us to fix the issue quickly.`)
+        }
+        return
+      }
+
       setResults(data)
-
-      // Auto-save to history
       await autoSaveToHistory(data)
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error fetching data:", error)
-      setError(error.message || "An error occurred while fetching data. Check your connection to the server.")
+      if (typeof error === "string") setError("An error occurred while fetching data. Check your connection to the server.")
     } finally {
       setLoading(false)
     }
@@ -504,7 +511,7 @@ export default function ResourceFinder() {
               </div>
             </CardHeader>
             <CardContent className="p-6">
-              <Tabs value={activeTab} onValueChange={handleTabChange}>
+              <Tabs value={activeTab} onValueChange={handleTabChange as (value: string) => void}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger
                     value="form"

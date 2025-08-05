@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Body, status, HTTPException
 from gotrue import User
-from lib.logger import endpoint
+from lib.logger import endpoint, errlog, log
 from lib.types import HistoryRecordDict
 from lib.history import utils
 from lib.auth.utils import get_current_user
@@ -24,8 +24,8 @@ async def save_record(
     current_user: User = Depends(get_current_user),
 ) -> HistoryRecordDict:
     try:
-        print(f"Received record type: {type(record)}")
-        print(f"Received record: {record}")
+        log(f"Received record type: {type(record)}", "history", "DEBUG")
+        log(f"Received record: {record}", "history", "DEBUG")
 
         # Ensure user_id is set
         if isinstance(record, dict):
@@ -38,16 +38,17 @@ async def save_record(
             record_dict["user_id"] = current_user.id
             record = record_dict
 
-        print(
-            f"Record after user_id assignment: {json.dumps(record, indent=2, default=str)}"
+        log(
+            f"Record after user_id assignment: {json.dumps(record, indent=2, default=str)}",
+            "history",
+            "DEBUG",
         )
 
         result = await utils.save_record(record)
         return result
 
     except Exception as e:
-        print(f"Error in save_record endpoint: {str(e)}")
-        print(f"Error type: {type(e)}")
+        errlog("save_record", e, "history")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to save record: {str(e)}")
 
@@ -62,7 +63,7 @@ async def rename_saved_record(
     try:
         return await utils.rename_saved_record(history_id, current_user.id, new_name)
     except Exception as e:
-        print(f"Error in rename_saved_record: {str(e)}")
+        errlog("rename_saved_record", e, "history")
         raise HTTPException(
             status_code=500, detail=f"Failed to rename record: {str(e)}"
         )
@@ -76,7 +77,7 @@ async def delete_saved_record(
     try:
         await utils.delete_saved_record(history_id, current_user.id)
     except Exception as e:
-        print(f"Error in delete_saved_record: {str(e)}")
+        errlog("delete_saved_record", e, "history")
         raise HTTPException(
             status_code=500, detail=f"Failed to delete record: {str(e)}"
         )

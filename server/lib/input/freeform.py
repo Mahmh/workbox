@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from lib.logger import errlog
 from lib.types import Folders
 from lib.datamodels import CustomFileTypes
 from lib.output.search import search
@@ -27,7 +28,7 @@ def process(user_input: str, file_types: CustomFileTypes) -> Folders:
             try:
                 folders[query] = future.result()
             except Exception as e:
-                print(f"Search failed for query '{query}': {e}")
+                errlog("process", e, "freeform")
                 folders[query] = []
 
     return transform_folders(folders)
@@ -35,18 +36,14 @@ def process(user_input: str, file_types: CustomFileTypes) -> Folders:
 
 def _generate_queries(prompt: str) -> list[str]:
     """Generates several search queries from Gemini."""
-    try:
-        response = GEMINI_CLIENT.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=f"Generate 4 Google search queries to find revision documents for this prompt make sure they are not overspecific and return relaible results from google give them as a list only:\n\n'{prompt}'",
-        )
-        queries = [
-            _sanitize_query(line) for line in response.text.splitlines() if line.strip()
-        ]
-        return queries
-    except Exception as e:
-        print("Gemini error:", e)
-        return []
+    response = GEMINI_CLIENT.models.generate_content(
+        model=GEMINI_MODEL,
+        contents=f"Generate 4 Google search queries to find revision documents for this prompt make sure they are not overspecific and return relaible results from google give them as a list only:\n\n'{prompt}'",
+    )
+    queries = [
+        _sanitize_query(line) for line in response.text.splitlines() if line.strip()
+    ]
+    return queries
 
 
 def _sanitize_query(raw_query: str) -> str:

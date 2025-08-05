@@ -5,6 +5,7 @@ from lib.datamodels import File, StructuredForm, CustomFileTypes
 Folders: TypeAlias = dict[str, list[File]]
 InputType: TypeAlias = Literal["form", "freeform"]
 InputDataType: TypeAlias = StructuredForm | str
+APIError: TypeAlias = dict[Literal["error"], str]
 
 
 class HistoryRecordDict(TypedDict):

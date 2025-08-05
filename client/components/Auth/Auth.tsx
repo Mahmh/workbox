@@ -1,75 +1,101 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, type FormEvent, type ChangeEvent } from "react"
-import { useAuth } from "./AuthContext"
-import { useTheme } from "../theme-context"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Mail, Lock, Loader2, BookOpen, Sparkles, Users, Shield, Moon, Sun } from "lucide-react"
+import type React from "react";
+import { useState, type FormEvent, type ChangeEvent } from "react";
+import { useAuth } from "./AuthContext";
+import { useTheme } from "../theme-context";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Mail,
+  Lock,
+  Loader2,
+  BookOpen,
+  Sparkles,
+  Users,
+  Shield,
+  Moon,
+  Sun,
+} from "lucide-react";
 
-const Auth: React.FC = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [message, setMessage] = useState<string | null>(null)
-  const [messageType, setMessageType] = useState<"success" | "error">("error")
-  const { login, signup, loading } = useAuth()
-  const { theme, toggleTheme } = useTheme()
+const Auth = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+  const [messageType, setMessageType] = useState<"success" | "error">("error");
+  const [submitting, setSubmitting] = useState(false)
+  const { login, signup, supabaseLoading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const loading = supabaseLoading || submitting;
 
   const handleSubmit = async (e: FormEvent, isLogin: boolean) => {
-    e.preventDefault()
-    setMessage(null)
+    e.preventDefault();
+    setMessage(null);
+    setSubmitting(true);
 
-    let error: string | null = null
-    if (isLogin) {
-      error = await login(email, password)
-    } else {
-      error = await signup(email, password)
-    }
+    try {
+      const error: string | null = isLogin
+        ? await login(email, password)
+        : await signup(email, password);
 
-    if (error) {
-      setMessage(error)
-      setMessageType("error")
-    } else if (!isLogin) {
-      setMessage("Signup successful! Check your email for confirmation if required.")
-      setMessageType("success")
-      setEmail("")
-      setPassword("")
+      if (error) {
+        
+        setMessage(error);
+        setMessageType(error.includes("Please check your email") ? "success" : "error");
+      } else if (!isLogin) {
+        setMessage(
+          "Signup successful! Check your email for confirmation if required."
+        );
+        setMessageType("success");
+        setEmail("");
+        setPassword("");
+      }
+    } finally {
+      setSubmitting(false);
     }
-  }
+  };
 
   const clearForm = () => {
-    setEmail("")
-    setPassword("")
-    setMessage(null)
-  }
+    setEmail("");
+    setPassword("");
+    setMessage(null);
+  };
 
   const features = [
     {
       icon: <BookOpen className="h-5 w-5 text-blue-500" />,
       title: "Smart Resource Discovery",
-      description: "Find educational materials tailored to your curriculum and grade level",
+      description:
+        "Find educational materials tailored to your curriculum and grade level",
     },
     {
       icon: <Sparkles className="h-5 w-5 text-purple-500" />,
       title: "AI-Powered Search",
-      description: "Advanced algorithms to match your learning objectives with quality content",
+      description:
+        "Advanced algorithms to match your learning objectives with quality content",
     },
     {
       icon: <Users className="h-5 w-5 text-green-500" />,
       title: "Personalized Experience",
-      description: "Save your search history and get personalized recommendations",
+      description:
+        "Save your search history and get personalized recommendations",
     },
     {
       icon: <Shield className="h-5 w-5 text-orange-500" />,
       title: "Secure & Private",
       description: "Your data is protected with enterprise-grade security",
     },
-  ]
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-blue-50 to-indigo-100 dark:from-background dark:via-blue-950/20 dark:to-indigo-950/20">
@@ -81,8 +107,17 @@ const Auth: React.FC = () => {
               <img src="/favicon.svg" alt="Workbox" className="w-8 h-8" />
               <span className="text-xl font-bold text-foreground">Workbox</span>
             </div>
-            <Button variant="ghost" size="sm" onClick={toggleTheme} className="text-foreground hover:bg-accent">
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleTheme}
+              className="text-foreground hover:bg-accent"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -93,8 +128,14 @@ const Auth: React.FC = () => {
         <div className="hidden lg:flex lg:w-1/2 items-center justify-center p-12">
           <div className="max-w-md">
             <div className="text-center mb-8">
-              <img src="/favicon.svg" alt="Workbox" className="w-16 h-16 mx-auto mb-4" />
-              <h1 className="text-3xl font-bold text-foreground mb-2">Discover Educational Resources</h1>
+              <img
+                src="/favicon.svg"
+                alt="Workbox"
+                className="w-16 h-16 mx-auto mb-4"
+              />
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                Discover Educational Resources
+              </h1>
               <p className="text-muted-foreground">
                 Powered by AI to find the perfect learning materials for your needs
               </p>
@@ -107,8 +148,12 @@ const Auth: React.FC = () => {
                     {feature.icon}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-foreground mb-1">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground">{feature.description}</p>
+                    <h3 className="font-semibold text-foreground mb-1">
+                      {feature.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {feature.description}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -121,7 +166,11 @@ const Auth: React.FC = () => {
           <div className="w-full max-w-md">
             <Card className="shadow-xl border bg-card/80 backdrop-blur-sm">
               <CardHeader className="space-y-1 text-center pb-6">
-                <img src="/favicon.svg" alt="Workbox" className="w-12 h-12 mx-auto mb-4 lg:hidden" />
+                <img
+                  src="/favicon.svg"
+                  alt="Workbox"
+                  className="w-12 h-12 mx-auto mb-4 lg:hidden"
+                />
                 <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Welcome Back
                 </CardTitle>
@@ -148,7 +197,11 @@ const Auth: React.FC = () => {
 
                   {message && (
                     <Alert
-                      className={`mb-6 ${messageType === "success" ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950" : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950"}`}
+                      className={`mb-6 ${
+                        messageType === "success"
+                          ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                          : "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950"
+                      }`}
                     >
                       <AlertDescription
                         className={
@@ -163,9 +216,15 @@ const Auth: React.FC = () => {
                   )}
 
                   <TabsContent value="login">
-                    <form onSubmit={(e) => handleSubmit(e, true)} className="space-y-4">
+                    <form
+                      onSubmit={(e) => handleSubmit(e, true)}
+                      className="space-y-4"
+                    >
                       <div className="space-y-2">
-                        <Label htmlFor="login-email" className="text-foreground font-medium">
+                        <Label
+                          htmlFor="login-email"
+                          className="text-foreground font-medium"
+                        >
                           Email
                         </Label>
                         <div className="relative">
@@ -174,7 +233,9 @@ const Auth: React.FC = () => {
                             id="login-email"
                             type="email"
                             value={email}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setEmail(e.target.value)
+                            }
                             placeholder="Enter your email"
                             className="pl-10 h-11 focus:border-blue-500 focus:ring-blue-500"
                             required
@@ -183,7 +244,10 @@ const Auth: React.FC = () => {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="login-password" className="text-foreground font-medium">
+                        <Label
+                          htmlFor="login-password"
+                          className="text-foreground font-medium"
+                        >
                           Password
                         </Label>
                         <div className="relative">
@@ -192,7 +256,9 @@ const Auth: React.FC = () => {
                             id="login-password"
                             type="password"
                             value={password}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setPassword(e.target.value)
+                            }
                             placeholder="Enter your password"
                             className="pl-10 h-11 focus:border-blue-500 focus:ring-blue-500"
                             required
@@ -218,9 +284,15 @@ const Auth: React.FC = () => {
                   </TabsContent>
 
                   <TabsContent value="signup">
-                    <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-4">
+                    <form
+                      onSubmit={(e) => handleSubmit(e, false)}
+                      className="space-y-4"
+                    >
                       <div className="space-y-2">
-                        <Label htmlFor="signup-email" className="text-foreground font-medium">
+                        <Label
+                          htmlFor="signup-email"
+                          className="text-foreground font-medium"
+                        >
                           Email
                         </Label>
                         <div className="relative">
@@ -229,7 +301,9 @@ const Auth: React.FC = () => {
                             id="signup-email"
                             type="email"
                             value={email}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setEmail(e.target.value)
+                            }
                             placeholder="Enter your email"
                             className="pl-10 h-11 focus:border-blue-500 focus:ring-blue-500"
                             required
@@ -238,7 +312,10 @@ const Auth: React.FC = () => {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="signup-password" className="text-foreground font-medium">
+                        <Label
+                          htmlFor="signup-password"
+                          className="text-foreground font-medium"
+                        >
                           Password
                         </Label>
                         <div className="relative">
@@ -247,7 +324,9 @@ const Auth: React.FC = () => {
                             id="signup-password"
                             type="password"
                             value={password}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setPassword(e.target.value)
+                            }
                             placeholder="Create a password"
                             className="pl-10 h-11 focus:border-blue-500 focus:ring-blue-500"
                             required
@@ -274,7 +353,8 @@ const Auth: React.FC = () => {
                 </Tabs>
 
                 <div className="mt-6 text-center text-sm text-muted-foreground">
-                  By continuing, you agree to our Terms of Service and Privacy Policy
+                  By continuing, you agree to our Terms of Service and Privacy
+                  Policy
                 </div>
               </CardContent>
             </Card>
@@ -282,7 +362,7 @@ const Auth: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Auth
+export default Auth;

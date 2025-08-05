@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from lib.logger import errlog
 from lib.types import Folders
 from lib.datamodels import StructuredForm, CustomFileTypes
 from lib.output.search import search
@@ -26,7 +27,7 @@ def process(user_input: StructuredForm, file_types: CustomFileTypes) -> Folders:
             try:
                 folders[topic] = future.result()
             except Exception as e:
-                print(f"Search failed for topic '{topic}': {e}")
+                errlog("process", e, "form")
                 folders[topic] = []
 
     return transform_folders(folders)

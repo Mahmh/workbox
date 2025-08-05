@@ -12,7 +12,12 @@ async def signup(cred: Credentials) -> LoggedInSession:
     Create a new user account.
     Returns a dict with 'user' and 'session'.
     """
-    client = await get_supabase()
+    client = await get_supabase_admin()
+
+    all_users = await client.auth.admin.list_users(page=1, per_page=1000)
+    if any(u.email == cred.email for u in all_users):
+        raise SignupError("The email you gave was already registered")
+
     res = await client.auth.sign_up(
         {
             "email": cred.email,

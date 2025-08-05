@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from gotrue import User
 from lib.logger import endpoint
+from lib.types import APIError
 from lib.auth import utils
 from lib.datamodels import Credentials, LoggedInSession
 
@@ -9,13 +10,13 @@ router = APIRouter(prefix="/auth")
 
 @router.post("/login")
 @endpoint
-async def login(cred: Credentials) -> LoggedInSession:
+async def login(cred: Credentials) -> LoggedInSession | APIError:
     return await utils.login(cred)
 
 
 @router.post("/signup")
 @endpoint
-async def signup(cred: Credentials) -> LoggedInSession:
+async def signup(cred: Credentials) -> LoggedInSession | APIError:
     return await utils.signup(cred)
 
 

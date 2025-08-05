@@ -8,7 +8,7 @@ import { SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY, BACKEND_API_URL } from "../con
 interface AuthContextType {
   user: User | null
   session: Session | null
-  loading: boolean
+  supabaseLoading: boolean
   login: (email: string, password: string) => Promise<string | null>
   signup: (email: string, password: string) => Promise<string | null>
   logout: () => Promise<string | null>
@@ -27,21 +27,21 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [supabaseLoading, setSupabaseLoading] = useState(false)
 
   // Effect to listen for Supabase auth state changes
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
       setSession(currentSession)
       setUser(currentSession?.user || null)
-      setLoading(false)
+      setSupabaseLoading(false)
     })
 
     // Initial check for session
     supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       setSession(initialSession)
       setUser(initialSession?.user || null)
-      setLoading(false)
+      setSupabaseLoading(false)
     })
 
     return () => {
@@ -51,7 +51,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Function to handle user login via backend API
   const login = useCallback(async (email: string, password: string): Promise<string | null> => {
-    setLoading(true)
     try {
       const response = await fetch(`${BACKEND_API_URL}/auth/login`, {
         method: "POST",
@@ -60,11 +59,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || "Login failed")
+        const errorData = await response.text()
+        throw new Error(errorData || "Login failed")
       }
 
       const data = await response.json()
+
+      if ('error' in data) {
+        throw new Error(data.error || "An unexpected error occurred during login.")
+      }
 
       // Set session using tokens from backend
       if (data.session) {
@@ -82,14 +85,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (err: any) {
       console.error("Login error:", err.message)
       return err.message || "An unexpected error occurred during login."
-    } finally {
-      setLoading(false)
     }
   }, [])
 
   // Function to handle user signup via backend API
   const signup = useCallback(async (email: string, password: string): Promise<string | null> => {
-    setLoading(true)
     try {
       const response = await fetch(`${BACKEND_API_URL}/auth/signup`, {
         method: "POST",
@@ -98,11 +98,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || "Signup failed")
+        const errorData = await response.text()
+        throw new Error(errorData || "Signup failed")
       }
 
       const data = await response.json()
+
+      if ('error' in data) {
+        throw new Error(data.error || "An unexpected error occurred during login.")
+      }
 
       if (data.session) {
         // Auto-login after signup
@@ -117,19 +121,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return null // Success
       } else {
         // Email confirmation required
-        return data.message || "Please check your email to confirm your account."
+        return "Please check your email to confirm your account"
       }
     } catch (err: any) {
       console.error("Signup error:", err.message)
-      return err.message || "An unexpected error occurred during signup."
-    } finally {
-      setLoading(false)
+      return err.message || "An unexpected error occurred during signup"
     }
   }, [])
 
   // Function to handle user logout
   const logout = useCallback(async (): Promise<string | null> => {
-    setLoading(true)
     try {
       // Call backend logout endpoint
       if (session?.access_token) {
@@ -152,8 +153,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (err: any) {
       console.error("Logout error:", err.message)
       return err.message || "An unexpected error occurred during logout."
-    } finally {
-      setLoading(false)
     }
   }, [session])
 
@@ -164,8 +163,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value = {
     user,
     session,
-    loading,
     login,
+    supabaseLoading,
     signup,
     logout,
     getAccessToken,
