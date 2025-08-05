@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Folder, ChevronDown, GraduationCap, BookOpen, X, Plus, Download, Loader2, RefreshCw } from "lucide-react"
 import { v4 as uuidv4 } from 'uuid'
+import JSZip from "jszip";
 import { BACKEND_API_URL } from "./constants"
 
 // Update the StructuredInput interface to match the backend schema
@@ -299,27 +300,31 @@ export default function ResourceFinder() {
     setIsDownloading(true)
 
     try {
-      const response = await fetch(`${BACKEND_API_URL}/output/download`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(results),
-      })
+      const zip = new JSZip();
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      for (let [folderName, files] of Object.entries(results)) {
+        const folder = zip.folder(folderName);
+        for (let file of files) {
+          try {
+            const res = await fetch(file.link);
+            if (!res.ok) throw new Error(res.statusText);
+            const blob = await res.blob();
+            folder?.file(file.filename, blob);
+          } catch {
+            // fallback to a .url file
+            const shortcut = `[InternetShortcut]\r\nURL=${file.link}\r\n`;
+            folder?.file(`${file.filename}.url`, shortcut);
+          }
+        }
       }
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = "resources.zip"
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      window.URL.revokeObjectURL(url)
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(zipBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "download.zip";
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading the file:", error)
       setError("Failed to download the file. Please try again.")
