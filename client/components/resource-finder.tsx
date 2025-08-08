@@ -1,4 +1,3 @@
-// resource-finder.tsx
 "use client"
 
 import type React from "react"
@@ -499,10 +498,10 @@ export default function ResourceFinder() {
                   <span>Search Parameters</span>
                 </CardTitle>
                 <Button
-                  onClick={startNewSession} // New Session button
+                  onClick={startNewSession}
                   size="sm"
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-primary bg-transparent"
+                  className="bg-primary text-white border-white hover:bg-white hover:text-primary"
                   title="Start a New Search Session"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
