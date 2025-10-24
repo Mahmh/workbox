@@ -34,12 +34,12 @@ async def signup(cred: Credentials) -> LoggedInSession:
 
     if session is None:
         return LoggedInSession(
-            user=user,
+            user=user.model_dump(),
             session=None,
             message="Please check your inbox and confirm your email to complete signup",
         )
 
-    return LoggedInSession(user=user, session=session)
+    return LoggedInSession(user=user.model_dump(), session=session.model_dump())
 
 
 async def login(cred: Credentials) -> LoggedInSession:
@@ -60,7 +60,7 @@ async def login(cred: Credentials) -> LoggedInSession:
     if session is None:
         raise LoginError("login() did not return a session object")
 
-    return LoggedInSession(user=res.user, session=res.session)
+    return LoggedInSession(user=user.model_dump(), session=session.model_dump())
 
 
 async def delete_account(user_id: str, *, soft: bool = False) -> None:

@@ -9,8 +9,8 @@ class Credentials(BaseModel):
 
 
 class LoggedInSession(BaseModel):
-    user: User
-    session: Optional[Session] = None
+    user: dict
+    session: Optional[dict] = None
     message: Optional[str] = None
 
 
