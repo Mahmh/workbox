@@ -8,7 +8,7 @@ _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 _locate = lambda x: os.path.join(_CURRENT_DIR, x)
 
 # Gemini
-GEMINI_MODEL = "gemini-1.5-flash"
+GEMINI_MODEL = "gemini-2.5-flash"
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_CLIENT = genai.Client(api_key=GEMINI_API_KEY)
 
