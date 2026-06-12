@@ -1,9 +1,11 @@
+name: workbox
+
 services:
   server:
     build:
       context: ./server
       dockerfile: Dockerfile.dev
-    container_name: server_dev
+    container_name: workbox-server-dev
     env_file:
       - ./server/.env
     ports:
@@ -15,7 +17,7 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile.dev
-    container_name: client_dev
+    container_name: workbox-client-dev
     env_file:
       - ./client/.env
     ports:
@@ -30,7 +32,7 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile.dev
-    container_name: nginx_dev
+    container_name: workbox-nginx-dev
     ports:
       - "80:80"
     volumes:
