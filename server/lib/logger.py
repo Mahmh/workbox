@@ -1,5 +1,6 @@
 from typing import Callable
 from functools import wraps
+from fastapi import HTTPException
 from lib.constants import ENABLE_LOGGING, LOG_DIR
 import logging, os
 
@@ -17,6 +18,8 @@ def endpoint(func: Callable) -> Callable:
                 "DEBUG",
             )
             return result
+        except HTTPException:
+            raise
         except Exception as e:
             errlog(func.__name__, e, "api-errors")
             return {"error": str(e)}

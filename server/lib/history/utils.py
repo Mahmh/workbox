@@ -2,7 +2,7 @@ import json
 from typing import Any
 from lib.logger import log, errlog
 from lib.types import HistoryRecordDict
-from lib.db import get_supabase
+from lib.db import get_supabase_admin
 
 
 def serialize_for_db(obj: Any) -> Any:
@@ -42,7 +42,7 @@ def serialize_for_db(obj: Any) -> Any:
 
 async def get_saved_records(user_id: str) -> list[HistoryRecordDict]:
     """Retrieve all history records for a given user, ordered by creation time desc."""
-    client = await get_supabase()
+    client = await get_supabase_admin()
     res = await (
         client.table("history")
         .select("*")
@@ -55,7 +55,7 @@ async def get_saved_records(user_id: str) -> list[HistoryRecordDict]:
 
 async def save_record(record: HistoryRecordDict) -> HistoryRecordDict:
     """Insert a new history record and return the created row."""
-    client = await get_supabase()
+    client = await get_supabase_admin()
 
     try:
         # Validate the record first
@@ -101,7 +101,7 @@ async def rename_saved_record(
     history_id: str, user_id: str, new_name: str
 ) -> HistoryRecordDict:
     """Rename the 'name' field of a specific history record and return the updated row."""
-    client = await get_supabase()
+    client = await get_supabase_admin()
     res = await (
         client.table("history")
         .update({"name": new_name})
@@ -118,7 +118,7 @@ async def rename_saved_record(
 
 async def delete_saved_record(history_id: str, user_id: str) -> None:
     """Delete a specific history record for a user."""
-    client = await get_supabase()
+    client = await get_supabase_admin()
     res = await (
         client.table("history")
         .delete()
