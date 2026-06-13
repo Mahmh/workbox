@@ -25,7 +25,7 @@ import { User, Settings, Shield, Trash2, Save, Loader2, Eye, EyeOff, Moon, Sun }
 import { BACKEND_API_URL } from "./constants"
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth()
+  const { user, logout, getAccessToken, refreshSession } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
@@ -44,15 +44,58 @@ export default function SettingsPage() {
   const [emailNotifications, setEmailNotifications] = useState(true)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
+  const getResponseError = async (response: Response) => {
+    try {
+      const data = await response.json()
+      return data.detail || data.error || "Request failed"
+    } catch {
+      return await response.text()
+    }
+  }
+
   const handleUpdateProfile = async () => {
+    const token = getAccessToken()
+    if (!token) {
+      setMessage({ type: "error", text: "You need to sign in again before updating your profile." })
+      return
+    }
+
+    if (!email.trim()) {
+      setMessage({ type: "error", text: "Email address is required." })
+      return
+    }
+
     setLoading(true)
     setMessage(null)
 
     try {
-      // Update profile logic here
-      setMessage({ type: "success", text: "Profile updated successfully!" })
-    } catch (error) {
-      setMessage({ type: "error", text: "Failed to update profile. Please try again." })
+      const response = await fetch(`${BACKEND_API_URL}/auth/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email: email.trim() }),
+      })
+
+      if (!response.ok) {
+        throw new Error(await getResponseError(response))
+      }
+
+      const data = await response.json()
+      if ("error" in data) {
+        throw new Error(data.error || "Failed to update profile")
+      }
+
+      setEmail(data.user?.email || email.trim())
+      try {
+        await refreshSession()
+      } catch (error) {
+        console.error("Failed to refresh session after profile update:", error)
+      }
+      setMessage({ type: "success", text: data.message || "Profile updated successfully!" })
+    } catch (error: any) {
+      setMessage({ type: "error", text: error.message || "Failed to update profile. Please try again." })
     } finally {
       setLoading(false)
     }
@@ -69,28 +112,60 @@ export default function SettingsPage() {
       return
     }
 
+    const token = getAccessToken()
+    if (!token) {
+      setMessage({ type: "error", text: "You need to sign in again before changing your password." })
+      return
+    }
+
     setLoading(true)
     setMessage(null)
 
     try {
-      // Change password logic here
-      setMessage({ type: "success", text: "Password changed successfully!" })
+      const response = await fetch(`${BACKEND_API_URL}/auth/password`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(await getResponseError(response))
+      }
+
+      const data = await response.json()
+      if ("error" in data) {
+        throw new Error(data.error || "Failed to change password")
+      }
+
+      setMessage({ type: "success", text: data.message || "Password changed successfully!" })
       setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
-    } catch (error) {
-      setMessage({ type: "error", text: "Failed to change password. Please try again." })
+    } catch (error: any) {
+      setMessage({ type: "error", text: error.message || "Failed to change password. Please try again." })
     } finally {
       setLoading(false)
     }
   }
 
   const handleDeleteAccount = async () => {
+    const token = getAccessToken()
+    if (!token) {
+      setMessage({ type: "error", text: "You need to sign in again before deleting your account." })
+      return
+    }
+
     try {
       const response = await fetch(`${BACKEND_API_URL}/auth`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${user?.access_token || ""}`,
+          Authorization: `Bearer ${token}`,
         },
       })
 

@@ -3,7 +3,13 @@ from fastapi import Header, HTTPException, status
 from gotrue import User
 from lib.db import get_supabase, get_supabase_admin
 from lib.errors import SignupError, LoginError
-from lib.datamodels import Credentials, LoggedInSession
+from lib.datamodels import (
+    AccountUpdateResult,
+    Credentials,
+    LoggedInSession,
+    PasswordChange,
+    ProfileUpdate,
+)
 from lib.constants import WEB_SERVER_URL
 
 
@@ -70,6 +76,80 @@ async def delete_account(user_id: str, *, soft: bool = False) -> None:
     """
     client = await get_supabase_admin()
     await client.auth.admin.delete_user(user_id, should_soft_delete=soft)
+
+
+async def update_profile(user_id: str, profile: ProfileUpdate) -> AccountUpdateResult:
+    """Update the authenticated user's profile fields."""
+    email = profile.email.strip()
+    if not email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is required",
+        )
+
+    if "@" not in email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email address is invalid",
+        )
+
+    client = await get_supabase_admin()
+    res = await client.auth.admin.update_user_by_id(user_id, {"email": email})
+
+    if res.user is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Profile update did not return a user object",
+        )
+
+    return AccountUpdateResult(
+        message="Profile updated successfully",
+        user=res.user.model_dump(),
+    )
+
+
+async def change_password(
+    user_id: str, password_change: PasswordChange
+) -> AccountUpdateResult:
+    """Verify the current password and update the authenticated user's password."""
+    if len(password_change.new_password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long",
+        )
+
+    admin_client = await get_supabase_admin()
+    user_res = await admin_client.auth.admin.get_user_by_id(user_id)
+    user_email = user_res.user.email if user_res.user else None
+
+    if not user_email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Could not find an email address for this account",
+        )
+
+    client = await get_supabase()
+    try:
+        await client.auth.sign_in_with_password(
+            {"email": user_email, "password": password_change.current_password}
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect",
+        )
+
+    res = await admin_client.auth.admin.update_user_by_id(
+        user_id, {"password": password_change.new_password}
+    )
+
+    if res.user is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Password update did not return a user object",
+        )
+
+    return AccountUpdateResult(message="Password changed successfully")
 
 
 async def get_current_user(authorization: Optional[str] = Header(None)) -> User:

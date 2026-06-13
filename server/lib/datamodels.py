@@ -14,6 +14,20 @@ class LoggedInSession(BaseModel):
     message: Optional[str] = None
 
 
+class ProfileUpdate(BaseModel):
+    email: str
+
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class AccountUpdateResult(BaseModel):
+    message: str
+    user: Optional[dict] = None
+
+
 class StructuredForm(BaseModel):
     curriculum: str
     grade: int

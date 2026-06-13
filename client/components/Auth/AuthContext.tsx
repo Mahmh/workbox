@@ -8,11 +8,13 @@ import { SUPABASE_PROJECT_URL, SUPABASE_ANON_KEY, BACKEND_API_URL } from "../con
 interface AuthContextType {
   user: User | null
   session: Session | null
+  loading: boolean
   supabaseLoading: boolean
   login: (email: string, password: string) => Promise<string | null>
   signup: (email: string, password: string) => Promise<string | null>
   logout: () => Promise<string | null>
   getAccessToken: () => string | null
+  refreshSession: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -45,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     })
 
     return () => {
-      authListener?.unsubscribe()
+      authListener?.subscription.unsubscribe()
     }
   }, [])
 
@@ -160,14 +162,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return session?.access_token || null
   }, [session])
 
+  const refreshSession = useCallback(async () => {
+    const { data, error } = await supabase.auth.refreshSession()
+    if (error) {
+      throw new Error(error.message || "Failed to refresh session")
+    }
+
+    setSession(data.session)
+    setUser(data.session?.user || null)
+  }, [])
+
   const value = {
     user,
     session,
+    loading: supabaseLoading,
     login,
     supabaseLoading,
     signup,
     logout,
     getAccessToken,
+    refreshSession,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
